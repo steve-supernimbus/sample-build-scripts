@@ -35,7 +35,7 @@ def upload_file_to_s3(local_path, remote_path):
     )
 
 def generate_presigned_url(remote_path):
-    aws_cli(
+    return aws_cli(
         [
             "s3",
             "presign",
@@ -47,7 +47,11 @@ def aws_cli(args):
     aws_call = ["aws"] + args
     log_step(f"AWS CLI: {subprocess.list2cmdline(aws_call)}")
     try:
-        subprocess.run(aws_call)
+        return subprocess.run(
+            aws_call,
+            capture_output = True,
+            text = True,
+        )
     except:
         raise Exception("Aws command failed")
 
