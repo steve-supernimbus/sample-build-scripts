@@ -41,7 +41,7 @@ def generate_presigned_url(remote_path, expires_in):
             "s3",
             "presign",
             remote_path,
-            f"expires-in {expires_in}"
+            "expires-in " + expires_in
         ]
     )
 
