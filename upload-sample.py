@@ -15,7 +15,7 @@ def main(argv):
     upload_file_to_s3(local_path, remote_path)
 
     log_step("Generate Presigned URL.")
-    url = generate_presigned_url(remote_path, expires_in)
+    url = generate_presigned_url(remote_path)
 
     log_step("Writing Presigned URL to disk.")
     write_file("url.txt", url)
@@ -34,7 +34,7 @@ def upload_file_to_s3(local_path, remote_path):
         ]
     )
 
-def generate_presigned_url(remote_path, expires_in):
+def generate_presigned_url(remote_path):
     aws_cli(
         [
             "s3",
