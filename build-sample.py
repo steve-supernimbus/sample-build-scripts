@@ -1,10 +1,17 @@
 import sys
 
 def main(argv):
-    logStep("Begin Building...")
-    logStep("Finish Building...")
+    log_step("Begin Building.")
+    log_step("Generating mock build.")
+    generate_mock_build()
+    log_step("Finish Building.")
 
-def logStep(step):
+def generate_mock_build():
+    f = open("./sample-build-file.txt", "w")
+    f.write("Now the file has more content!\n")
+    f.close()
+
+def log_step(step):
     separator = "===================================================="
     new_line = "\n"
     print(separator)
