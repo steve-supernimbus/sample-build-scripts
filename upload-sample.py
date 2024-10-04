@@ -1,6 +1,7 @@
 import sys
 import subprocess
 
+expires_in = 604800
 file_name = "sample-build-file.txt"
 local_path = f"./{file_name}"
 
@@ -10,8 +11,16 @@ remote_path = f"s3://{bucket}/{remote_dir}/{file_name}"
 
 def main(argv):
     log_step("Begin Upload.")
+
     log_step("Uploading file to S3.")
     upload_file_to_s3(local_path, remote_path)
+
+    log_step("Generate Presigned URL.")
+    url = generate_presigned_url(remote_path, expires_in)
+
+    log_step("Writing Presigned URL to disk.")
+    write_file("url.txt", url)
+
     log_step("Finish Uploading.")
 
 def upload_file_to_s3(local_path, remote_path):
@@ -26,6 +35,16 @@ def upload_file_to_s3(local_path, remote_path):
         ]
     )
 
+def generate_presigned_url(remote_path, expires_in):
+    aws_cli(
+        [
+            "s3",
+            "presign",
+            remote_path,
+            f"expires-in {expires_in}"
+        ]
+    )
+
 def aws_cli(args):
     aws_call = ["aws"] + args
     log_step(f"AWS CLI: {subprocess.list2cmdline(aws_call)}")
@@ -33,6 +52,11 @@ def aws_cli(args):
         subprocess.run(aws_call)
     except:
         raise Exception("Aws command failed")
+
+def write_file(file_name, content):
+    f = open(f"./{file_name}", "w")
+    f.write(content)
+    f.close()
 
 def log_step(step):
     separator = "===================================================="
