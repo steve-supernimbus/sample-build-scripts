@@ -1,24 +1,28 @@
+import datetime
 import sys
 import subprocess
 
 file_name = "sample-build-file.txt"
 local_path = f"./{file_name}"
 
-bucket = "gamelift-tutorial-build-steve"
-remote_dir = "nightly-builds"
-remote_path = f"s3://{bucket}/{remote_dir}/{file_name}"
-
 def main(argv):
     log_step("Begin Upload.")
 
+    log_step("Generating remote path.")
+    remote_path = get_remote_path()
+    log_step(remote_path)
+
     log_step("Uploading file to S3.")
     upload_file_to_s3(local_path, remote_path)
+    log_step("Successfully uploaded file to S3.")
 
     log_step("Generate Presigned URL.")
     url = generate_presigned_url(remote_path)
+    log_step(url)
 
     log_step("Writing Presigned URL to disk.")
     write_file("url.txt", url)
+    log_step("Successfully ")
 
     log_step("Finish Uploading.")
 
@@ -54,6 +58,15 @@ def aws_cli(args):
         ).stdout
     except:
         raise Exception("Aws command failed")
+
+def get_timestamp():
+    current_datetime = datetime.datetime.now()
+    return current_datetime.strftime("%Y-%m-%d-%H:%M:%S")
+
+def get_remote_path():
+    bucket = "gamelift-tutorial-build-steve"
+    remote_dir = "nightly-builds"
+    return f"s3://{bucket}/{remote_dir}/{get_timestamp()}/{file_name}"
 
 def write_file(file_name, content):
     f = open(f"./{file_name}", "w")
