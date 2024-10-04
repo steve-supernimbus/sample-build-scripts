@@ -8,7 +8,7 @@ def main(argv):
 
 def generate_mock_build():
     f = open("./sample-build-file.txt", "w")
-    f.write("Now the file has more content!\n")
+    f.write("Imagine I'm an Unreal Project Build.\n")
     f.close()
 
 def log_step(step):
