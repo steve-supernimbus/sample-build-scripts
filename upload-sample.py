@@ -1,7 +1,7 @@
 import sys
 import subprocess
 
-expires_in = 604800
+expires_in = "604800"
 file_name = "sample-build-file.txt"
 local_path = f"./{file_name}"
 
