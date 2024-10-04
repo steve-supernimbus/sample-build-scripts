@@ -51,7 +51,7 @@ def aws_cli(args):
             aws_call,
             capture_output = True,
             text = True,
-        )
+        ).stdout
     except:
         raise Exception("Aws command failed")
 
