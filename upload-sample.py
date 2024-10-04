@@ -1,7 +1,6 @@
 import sys
 import subprocess
 
-expires_in = "604800"
 file_name = "sample-build-file.txt"
 local_path = f"./{file_name}"
 
@@ -31,7 +30,7 @@ def upload_file_to_s3(local_path, remote_path):
             local_path,
             remote_path,
             "--storage-class=INTELLIGENT_TIERING",
-            "--no-progress"
+            "--no-progress",
         ]
     )
 
@@ -41,7 +40,6 @@ def generate_presigned_url(remote_path, expires_in):
             "s3",
             "presign",
             remote_path,
-            "expires-in " + expires_in
         ]
     )
 
