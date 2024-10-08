@@ -49,13 +49,12 @@ pipeline {
                         changelog: true,
                         poll: true
                     )
-                    
                     stash(name: 'build', includes: 'build.py')
                     stash(name: 'upload', includes: 'upload.py')
                     stash(name: 'read-write', includes: 'read-write.py')
-                    stash(name: 'ini-override', includes: 'IniOverride.py')
+                    stash(name: 'ini-override', includes: 'ini-override.py')
                     dir('configs/ini-files/engine') {
-                        stash(name: 'engine-override', includes: "${ENGINE_OVERRIDE_NAME}")
+                        stash(name: 'engine-override', includes: "${params.ENGINE_OVERRIDE_NAME}")
                     }
                 }
             }
@@ -163,7 +162,7 @@ pipeline {
                         unstash('engine-override')
                     }
 
-                    powershell "python -u IniOverride.py --engine='.\\temp\\${env.ENGINE_OVERRIDE_NAME}'"
+                    powershell "python -u ini-override.py --engine-override-path='.\\temp\\${params.ENGINE_OVERRIDE_NAME}'"
 
                     dir('temp') {
                         deleteDir()
