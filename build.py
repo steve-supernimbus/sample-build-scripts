@@ -13,6 +13,9 @@ def main(pre_reqs, client, server, client_target, server_target, configuration):
         )
     )
 
+    if pre_reqs:
+        build_pre_reqs()
+
     log_step("Begin Building.", "")
     log_step("Generating mock build.", "")
     generate_mock_build()
@@ -25,23 +28,23 @@ def generate_mock_build():
 
 def build_pre_reqs():
     log_step("Building Pre Reqs", "")
+    build_engine_editor()
 
-def buildEngineEditor():
+def build_engine_editor():
     ue4_cli(["build-target", "UE4Editor"])
 
 def ue4_cli(args):
+    failed_message = "ue4 cli command failed"
     try:
-        ue4 = add_args(["ue4"], args)
-        result = cli(ue4)
+        result = cli(add_args(["ue4"], args))
         if result != 0:
-            raise Exception("ue4 cli command failed")
+            raise Exception(failed_message)
     except:
-        raise Exception("ue4 cli command failed")
+        raise Exception(failed_message)
 
 def cli(args):
     try:
-        print("Cmd call: ")
-        print(subprocess.list2cmdline(args))
+        print(f"Cli: {subprocess.list2cmdline(args)}")
         return subprocess.call(args)
     except:
         raise Exception("cmd call failed")
@@ -67,13 +70,13 @@ server_target: {server_target},
 configuration: {configuration}"""
 
 def get_script_args():
-    parser = argparse.ArgumentParser(description="UE Sample Build Script")
-    parser.add_argument("--pre-reqs")
-    parser.add_argument("--client")
-    parser.add_argument("--server")
-    parser.add_argument("--client-target")
-    parser.add_argument("--server-target")
-    parser.add_argument("--configuration")
+    parser = argparse.ArgumentParser(description="Build Script")
+    parser.add_argument("--pre-reqs", default=False)
+    parser.add_argument("--client", default=False)
+    parser.add_argument("--server", default=False)
+    parser.add_argument("--client-target", default="Win64")
+    parser.add_argument("--server-target", default="Win64")
+    parser.add_argument("--configuration", default="Development")
     return parser.parse_args()
 
 if __name__ == "__main__":

@@ -1,7 +1,7 @@
 # Sample UE Pipeline Scripts
 
 ## Build Sample Script
-ReadMe: [Link](./build-sample-readme.md)
+ReadMe: [Link](./build-readme.md)
 
 ## S3 Upload Sample Script
 ReadMe: 
