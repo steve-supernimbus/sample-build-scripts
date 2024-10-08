@@ -5,6 +5,7 @@ def main():
     read_write(os.getcwd())
 
 def read_write(project_dir):
+    print(f"Making the following directory read/writable: {project_dir}")
     run_powershell_command((
         f'Get-ChildItem -Path "{project_dir}"'
         + r"-Recurse -File | % { $_.IsReadOnly=$False }"
