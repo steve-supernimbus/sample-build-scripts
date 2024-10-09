@@ -35,10 +35,10 @@ def build_engine_editor():
     ue4_cli(["build-target", "UE4Editor"])
 
 def build_ue4_components(configuration):
-    buildEngineBuildTarget("ShaderCompileWorker", configuration)
-    buildEngineBuildTarget("UnrealLightmass", configuration)
+    build_engine_target("ShaderCompileWorker", configuration)
+    build_engine_target("UnrealLightmass", configuration)
 
-def buildEngineBuildTarget(component, configuration):
+def build_engine_target(component, configuration):
     try:
         build_target = ["build-target", component, configuration]
         print(build_target)
