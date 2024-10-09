@@ -38,11 +38,11 @@ def build_pre_reqs(configuration):
 
 def create_zip_directory(zip_dir):
     log_step(f"Creating zip directory: {zip_dir}", "")
-    cli(["powershell", "-Command", f'mkdir {zip_dir}'])
+    cli(["powershell", "-Command", f'mkdir "{zip_dir}"'])
 
 def create_out_directory(out_dir):
     log_step(f"Creating out directory: {out_dir}", "")
-    cli(["powershell", "-Command", f'mkdir {out_dir}'])
+    cli(["powershell", "-Command", f'mkdir "{out_dir}"'])
 
 def cli(args):
     try:
