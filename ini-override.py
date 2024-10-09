@@ -12,15 +12,15 @@ def main(game_override_path, engine_override_path):
     if engine_override_path is not None:
         engine_override(config_dir, engine_override_path)
 
-    print("Scripted ended successfully.")
+    print("Script ended successfully.")
 
 def game_override(config_dir, game_override_path):
-    print("Overriding Default Game Ini file...")
+    print("Overriding Default Game ini file...")
     remove_ini_file(os.path.join(config_dir, "DefaultGame.ini"))
     copy_ini_file(game_override_path, config_dir, "DefaultGame.ini")
 
 def engine_override(config_dir, engine_override_path):
-    print("Overriding Default Engine Ini file...")
+    print("Overriding Default Engine ini file...")
     remove_ini_file(os.path.join(config_dir, "DefaultEngine.ini"))
     copy_ini_file(engine_override_path, config_dir, "DefaultEngine.ini")
 

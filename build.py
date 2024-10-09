@@ -32,7 +32,7 @@ def build_pre_reqs(configuration):
     build_ue4_components(configuration)
 
 def build_engine_editor():
-    ue4_cli(["build-target", "UE4Editor"])
+    ue4_cli(["build-target", "UnrealEditor"])
 
 def build_ue4_components(configuration):
     build_engine_target("ShaderCompileWorker", configuration)
