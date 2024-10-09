@@ -2,8 +2,8 @@ import argparse
 import os
 import subprocess
 
-ZIP_DIR = os.path.join(os.getcwd(), "Zips")
-OUT_DIR = os.path.join(os.getcwd(), "Packaged")
+ZIP_DIR = os.path.join(os.getcwd(), "zips")
+OUT_DIR = os.path.join(os.getcwd(), "packaged")
 
 def main(pre_reqs, client, server, client_target, server_target, configuration, maps):
     log_step(
@@ -32,19 +32,16 @@ def main(pre_reqs, client, server, client_target, server_target, configuration, 
 
 def build_pre_reqs(configuration):
     log_step("Building Pre Reqs", "")
-    build_engine_editor()
-    build_ue4_components(configuration)
-
-def build_engine_editor():
     ue4_cli(["build-target", "UnrealEditor"])
+    build_ue4_components(configuration)
 
 def create_zip_directory(zip_dir):
     log_step(f"Creating zip directory: {zip_dir}", "")
-    cli(f"mkdir {zip_dir}")
+    cli(f"New-Item {zip_dir}")
 
 def create_out_directory(out_dir):
     log_step(f"Creating out directory: {out_dir}", "")
-    cli(f"mkdir {out_dir}")
+    cli(f"New-Item {out_dir}")
 
 def build_ue4_components(configuration):
     build_engine_target("ShaderCompileWorker", configuration)
