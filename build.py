@@ -24,7 +24,6 @@ BUILD_PARAMS_QUEST_DEBUG = [
     "-2017"
 ]
 
-
 def main(pre_reqs, mode, target, configuration, maps):
     log_step(
         "Script Arguments",
@@ -42,10 +41,10 @@ def main(pre_reqs, mode, target, configuration, maps):
 
     if mode == "server":
         log_step("Build UE4 Server Target")
-        cli(["ue4", "build", "Development", "Server"])
+        #cli(["ue4", "build", "Development", "Server"])
         log_step("Successfully built UE4 Server Target")
 
-    build_project()
+    build_project(mode, target, configuration, maps, OUT_DIR)
 
 def build_pre_reqs(configuration):
     log_step("Building Pre Reqs")
@@ -53,16 +52,11 @@ def build_pre_reqs(configuration):
     cli(["ue4", "build-target", "ShaderCompileWorker", configuration])
     cli(["ue4", "build-target", "UnrealLightmass", configuration])
 
-#def create_zip_directory(zip_dir):
-#    log_step(f"Creating zip directory: {zip_dir}", "")
-#    cli(["powershell", "-Command", f'mkdir "{zip_dir}"'])
-
-#def create_out_directory(out_dir):
-#    log_step(f"Creating out directory: {out_dir}", "")
-#    cli(["powershell", "-Command", f'mkdir "{out_dir}"'])
-
-def build_project(mode, target, configuration, map_str, out_dir):
-    print()
+def build_project(mode, target, configuration, maps, out_dir):
+    log_step(
+        "Building project with following params",
+        f"Mode: {mode}, Target: {target}, Configuration: {configuration}, Map: {maps}, Directory: {out_dir"
+    )
 
 def create_directory(dir_path):
     log_step(f"Creating directory : {dir_path}")
@@ -93,7 +87,7 @@ maps: {maps}"""
 def get_script_args():
     parser = argparse.ArgumentParser(description="Build Script")
     parser.add_argument("--pre-reqs", default=False)
-    parser.add_argument("--mode", default="server")
+    parser.add_argument("--mode", default=None)
     parser.add_argument("--target", default="Win64")
     parser.add_argument("--configuration", default="Development")
     parser.add_argument("--maps", default=None)
