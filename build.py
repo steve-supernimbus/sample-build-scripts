@@ -1,7 +1,7 @@
 import argparse
 import subprocess
 
-def main(pre_reqs, client, server, client_target, server_target, configuration):
+def main(pre_reqs, client, server, client_target, server_target, configuration, maps):
     log_step(
         "Script Arguments",
         get_argument_message(
@@ -9,22 +9,17 @@ def main(pre_reqs, client, server, client_target, server_target, configuration):
             client, server,
             client_target,
             server_target,
-            configuration
+            configuration,
+            maps
         )
     )
 
     if pre_reqs:
         build_pre_reqs(configuration)
 
+def build_project():
     log_step("Begin Building.", "")
-    log_step("Generating mock build.", "")
-    generate_mock_build()
     log_step("Finish Building.", "")
-
-def generate_mock_build():
-    f = open("./sample-build-file.txt", "w")
-    f.write("Imagine I'm an Unreal Project Build.\n")
-    f.close()
 
 def build_pre_reqs(configuration):
     log_step("Building Pre Reqs", "")
@@ -74,13 +69,14 @@ def log_step(step_name, step_output):
     print(f"Step Output: {step_output}")
     print(separator)
 
-def get_argument_message(pre_reqs, client, server, client_target, server_target, configuration):
+def get_argument_message(pre_reqs, client, server, client_target, server_target, configuration, maps):
     return f"""pre-reqs: {pre_reqs},
 client: {client},
 server: {server},
 client_target: {client_target},
 server_target: {server_target},
-configuration: {configuration}"""
+configuration: {configuration}
+maps: {maps}"""
 
 def get_script_args():
     parser = argparse.ArgumentParser(description="Build Script")
@@ -90,8 +86,9 @@ def get_script_args():
     parser.add_argument("--client-target", default="Win64")
     parser.add_argument("--server-target", default="Win64")
     parser.add_argument("--configuration", default="Development")
+    parser.add_argument("--maps", default=None)
     return parser.parse_args()
 
 if __name__ == "__main__":
     args = get_script_args()
-    main(args.pre_reqs, args.client, args.server, args.client_target, args.server_target, args.configuration)
+    main(args.pre_reqs, args.client, args.server, args.client_target, args.server_target, args.configuration, args.maps)

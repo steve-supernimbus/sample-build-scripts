@@ -10,6 +10,7 @@ pipeline {
         string(name: 'PROJECT_WS', defaultValue: 'GameLiftTutorial-Nightly', description: 'Specify the projects workspace')
         string(name: 'EMAIL_LIST', defaultValue: 'stephen@supernimbus.net', description: 'Specify emails of people who want to be notified of build results. Separate emails with a comma. Do not include whitespace')
         string(name: 'EMAIL_REPLY_TO', defaultValue: 'stephen@supernimbus.net', description: 'Specify the reply-to email.')
+        string(name: 'MAPS', defaultValue: '/Game/Clonk/Maps/TestLevels/TestLevel_HubMap_Mobile+/Game/Clonk/Maps/TestLevels/LVL_ClayYeetsShowcase', description: 'Specify the Maps.')
     }
 
     environment {
@@ -177,6 +178,15 @@ pipeline {
                 dir('project') {
                     unstash 'build'
                     powershell "python -u build.py --pre-reqs True"
+                }
+            }
+        }
+
+        stage('Build Project') {
+            steps {
+                dir('project') {
+                    unstash 'build'
+                    powershell 'python -u build.py --maps=${params.ENGINE_OVERRIDE_NAME} --client --server --configuration=Development'
                 }
             }
         }
