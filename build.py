@@ -58,7 +58,7 @@ def build_pre_reqs(configuration):
 def build_project(mode, target, configuration, maps, out_dir):
     log_step(
         "Building project with following params",
-        f"Mode: {mode}, Target: {target}, Configuration: {configuration}, Map: {maps}, Directory: {out_dir"
+        f"Mode: {mode}, Target: {target}, Configuration: {configuration}, Map: {maps}, Directory: {out_dir}"
     )
     fullArgs = BUILD_PARAMS_QUEST_DEBUG
     fullArgs += [f"-project={U_PROJECT_PATH}"]
