@@ -186,11 +186,11 @@ pipeline {
             steps {
                 dir('project') {
                     unstash 'build'
-                    powershell 'python -u build.py --maps=${params.ENGINE_OVERRIDE_NAME} --client --server --configuration=Development'
+                    powershell 'python -u build.py --client True --server True --configuration=Development --maps=${params.ENGINE_OVERRIDE_NAME}'
                 }
             }
         }
-        
+
         stage('Upload Project') {
             steps {
                 dir('project') {

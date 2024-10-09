@@ -1,5 +1,9 @@
 import argparse
+import os
 import subprocess
+
+ZIP_DIR = os.path.join(os.getcwd(), "Zips")
+OUT_DIR = os.path.join(os.getcwd(), "Packaged")
 
 def main(pre_reqs, client, server, client_target, server_target, configuration, maps):
     log_step(
@@ -17,6 +21,10 @@ def main(pre_reqs, client, server, client_target, server_target, configuration, 
     if pre_reqs:
         build_pre_reqs(configuration)
 
+    if client or server:
+        create_zip_directory(ZIP_DIR)
+        create_out_directory(OUT_DIR)
+
 def build_project():
     log_step("Begin Building.", "")
     log_step("Finish Building.", "")
@@ -28,6 +36,14 @@ def build_pre_reqs(configuration):
 
 def build_engine_editor():
     ue4_cli(["build-target", "UnrealEditor"])
+
+def create_zip_directory(zip_dir):
+    log_step(f"Creating zip directory: {zip_dir}")
+    cli(f"mkdir {zip_dir}")
+
+def create_out_directory(out_dir):
+    log_step(f"Creating out directory: {out_dir}")
+    cli(f"mkdir {out_dir}")
 
 def build_ue4_components(configuration):
     build_engine_target("ShaderCompileWorker", configuration)
@@ -52,10 +68,10 @@ def ue4_cli(args):
 
 def cli(args):
     try:
-        print(f"Cli: {subprocess.list2cmdline(args)}")
+        print(f"cli: {subprocess.list2cmdline(args)}")
         return subprocess.call(args)
     except:
-        raise Exception("cmd call failed")
+        raise Exception("cli call failed")
 
 def add_args(default, args):
     if (args is None) or (len(args) < 1):
