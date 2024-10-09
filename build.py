@@ -5,7 +5,7 @@ import subprocess
 ZIP_DIR = os.path.join(os.getcwd(), "zips")
 OUT_DIR = os.path.join(os.getcwd(), "packaged")
 U_PROJECT_PATH = os.path.join(os.getcwd(), "ClonkBR.uproject")
-BUILD_PARAMS_QUEST_DEBUG = [
+BUILD_PARAMS = [
     "BuildCookRun",
     "-noP4",
     "-clientconfig=Development",
@@ -60,7 +60,7 @@ def build_project(mode, target, configuration, maps, out_dir):
         "Building project with following params",
         f"Mode: {mode}, Target: {target}, Configuration: {configuration}, Map: {maps}, Directory: {out_dir}"
     )
-    fullArgs = BUILD_PARAMS_QUEST_DEBUG
+    fullArgs = BUILD_PARAMS
     fullArgs += [f'-project="{U_PROJECT_PATH}"']
     fullArgs += [f"-map={maps}"]
     fullArgs += [f"-configuration={configuration}"]
@@ -93,7 +93,7 @@ def cli(args):
 def log_step(step_name, step_output="No Output"):
     separator = "===================================================="
     print(separator)
-    print(f"Step Name: {step_name}")
+    print(step_name)
     print(f"Step Output: {step_output}")
     print(separator)
 
