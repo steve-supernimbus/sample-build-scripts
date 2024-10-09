@@ -26,12 +26,12 @@ def main(pre_reqs, client, server, client_target, server_target, configuration, 
         create_directory(OUT_DIR)
 
     if server:
-        log_step("Build UE4 Server Target", "")
+        log_step("Build UE4 Server Target")
         cli(["ue4", "build", "Development", "Server"])
-        log_step("Successfully built UE4 Server Target", "")
+        log_step("Successfully built UE4 Server Target")
 
 def build_pre_reqs(configuration):
-    log_step("Building Pre Reqs", "")
+    log_step("Building Pre Reqs")
     cli(["ue4", "build-target", "UnrealEditor"])
     cli(["ue4", "build-target", "ShaderCompileWorker", configuration])
     cli(["ue4", "build-target", "UnrealLightmass", configuration])
@@ -56,7 +56,7 @@ def cli(args):
     except:
         raise Exception("cli call failed")
 
-def log_step(step_name, step_output):
+def log_step(step_name, step_output="No Output"):
     separator = "===================================================="
     print(separator)
     print(f"Step Name: {step_name}")
