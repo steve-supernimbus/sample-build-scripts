@@ -26,9 +26,9 @@ def main(pre_reqs, client, server, client_target, server_target, configuration, 
         create_out_directory(OUT_DIR)
 
     if server:
-        log_step("Build UE4 Server Target")
+        log_step("Build UE4 Server Target", "")
         cli(["ue4", "build", "Development", "Server"])
-        log_step("Successfully built UE4 Server Target")
+        log_step("Successfully built UE4 Server Target", "")
 
 def build_pre_reqs(configuration):
     log_step("Building Pre Reqs", "")
@@ -38,11 +38,11 @@ def build_pre_reqs(configuration):
 
 def create_zip_directory(zip_dir):
     log_step(f"Creating zip directory: {zip_dir}", "")
-    cli(["powershell", "-Command", "mkdir", zip_dir])
+    cli(["powershell", "-Command", f'mkdir {zip_dir}'])
 
 def create_out_directory(out_dir):
     log_step(f"Creating out directory: {out_dir}", "")
-    cli(["powershell", "-Command", "mkdir", out_dir])
+    cli(["powershell", "-Command", f'mkdir {out_dir}'])
 
 def cli(args):
     try:
