@@ -61,7 +61,7 @@ def build_project(mode, target, configuration, maps, out_dir):
         f"Mode: {mode}, Target: {target}, Configuration: {configuration}, Map: {maps}, Directory: {out_dir}"
     )
     fullArgs = BUILD_PARAMS_QUEST_DEBUG
-    fullArgs += [f"-project={U_PROJECT_PATH}"]
+    fullArgs += [f'-project="{U_PROJECT_PATH}"']
     fullArgs += [f"-map={maps}"]
     fullArgs += [f"-configuration={configuration}"]
 
@@ -73,7 +73,7 @@ def build_project(mode, target, configuration, maps, out_dir):
     if mode == "server":
         fullArgs += [f"-servertargetplatform={target}", "-server"]
 
-    fullArgs += [f"-archivedirectory={out_dir}"]
+    fullArgs += [f'-archivedirectory="{out_dir}"']
 
     cmd = ["ue4", "uat"] + fullArgs
     log_step(f"Making the following CLI call: {' '.join(cmd)}")
