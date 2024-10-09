@@ -37,23 +37,15 @@ def build_pre_reqs(configuration):
 
 def create_zip_directory(zip_dir):
     log_step(f"Creating zip directory: {zip_dir}", "")
-    cli(f"New-Item {zip_dir}")
+    cli(['New-Item', zip_dir])
 
 def create_out_directory(out_dir):
     log_step(f"Creating out directory: {out_dir}", "")
-    cli(f"New-Item {out_dir}")
+    cli(['New-Item', out_dir])
 
 def build_ue4_components(configuration):
-    build_engine_target("ShaderCompileWorker", configuration)
-    build_engine_target("UnrealLightmass", configuration)
-
-def build_engine_target(component, configuration):
-    try:
-        build_target = ["build-target", component, configuration]
-        print(build_target)
-        ue4_cli(build_target)
-    except:
-        raise Exception("Failed to build UE4")
+    ue4_cli(["build-target", "ShaderCompileWorker", configuration])
+    ue4_cli(["build-target", "UnrealLightmass", configuration])
 
 def ue4_cli(args):
     failed_message = "ue4 cli command failed"
