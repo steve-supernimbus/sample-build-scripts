@@ -77,7 +77,7 @@ def build_project(mode, target, configuration, maps, out_dir):
 
     cmd = ["ue4", "uat"] + fullArgs
     log_step(f"Making the following CLI call: {' '.join(cmd)}")
-    cli(cmd)
+    #cli(cmd)
 
 def create_directory(dir_path):
     log_step(f"Creating directory : {dir_path}")
