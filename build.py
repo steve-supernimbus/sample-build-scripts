@@ -25,9 +25,10 @@ def main(pre_reqs, client, server, client_target, server_target, configuration, 
         create_zip_directory(ZIP_DIR)
         create_out_directory(OUT_DIR)
 
-def build_project():
-    log_step("Begin Building.", "")
-    log_step("Finish Building.", "")
+    if server:
+        log_step("Build UE4 Server Target")
+        ue4_cli(["build", "Development", "Server"])
+        log_step("Successfully built UE4 Server Target")
 
 def build_pre_reqs(configuration):
     log_step("Building Pre Reqs", "")
@@ -38,11 +39,11 @@ def build_engine_editor():
     ue4_cli(["build-target", "UnrealEditor"])
 
 def create_zip_directory(zip_dir):
-    log_step(f"Creating zip directory: {zip_dir}")
+    log_step(f"Creating zip directory: {zip_dir}", "")
     cli(f"mkdir {zip_dir}")
 
 def create_out_directory(out_dir):
-    log_step(f"Creating out directory: {out_dir}")
+    log_step(f"Creating out directory: {out_dir}", "")
     cli(f"mkdir {out_dir}")
 
 def build_ue4_components(configuration):
