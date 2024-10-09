@@ -171,12 +171,12 @@ pipeline {
             }
         }
 
-        stage('Build Project') {
+        stage('Build Pre-Requisites') {
             steps {
-                echo 'STAGE - Build Project'
+                echo 'STAGE - Build Pre-Requisites'
                 dir('project') {
                     unstash 'build'
-                    powershell "python -u build.py"
+                    powershell "python -u build.py --pre-reqs True"
                 }
             }
         }

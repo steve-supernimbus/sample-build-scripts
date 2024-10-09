@@ -14,7 +14,7 @@ def main(pre_reqs, client, server, client_target, server_target, configuration):
     )
 
     if pre_reqs:
-        build_pre_reqs()
+        build_pre_reqs(configuration)
 
     log_step("Begin Building.", "")
     log_step("Generating mock build.", "")
@@ -26,12 +26,25 @@ def generate_mock_build():
     f.write("Imagine I'm an Unreal Project Build.\n")
     f.close()
 
-def build_pre_reqs():
+def build_pre_reqs(configuration):
     log_step("Building Pre Reqs", "")
     build_engine_editor()
+    build_ue4_components(configuration)
 
 def build_engine_editor():
     ue4_cli(["build-target", "UE4Editor"])
+
+def build_ue4_components(configuration):
+    buildEngineBuildTarget("ShaderCompileWorker", configuration)
+    buildEngineBuildTarget("UnrealLightmass", configuration)
+
+def buildEngineBuildTarget(component, configuration):
+    try:
+        build_target = ["build-target", component, configuration]
+        print(build_target)
+        ue4_cli(build_target)
+    except:
+        raise Exception("Failed to build UE4")
 
 def ue4_cli(args):
     failed_message = "ue4 cli command failed"
