@@ -45,7 +45,8 @@ def build_pre_reqs(configuration):
 #    cli(["powershell", "-Command", f'mkdir "{out_dir}"'])
 
 def create_directory(dir_path):
-    if os.path.exists(dir_path):
+    log_step(f"Creating directory : {dir_path}")
+    if not os.path.exists(dir_path):
         os.makedirs(dir_path)
 
 def cli(args):
