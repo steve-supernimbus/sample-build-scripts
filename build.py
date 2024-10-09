@@ -27,34 +27,22 @@ def main(pre_reqs, client, server, client_target, server_target, configuration, 
 
     if server:
         log_step("Build UE4 Server Target")
-        ue4_cli(["build", "Development", "Server"])
+        cli(["ue4", "build", "Development", "Server"])
         log_step("Successfully built UE4 Server Target")
 
 def build_pre_reqs(configuration):
     log_step("Building Pre Reqs", "")
-    ue4_cli(["build-target", "UnrealEditor"])
-    build_ue4_components(configuration)
+    cli(["ue4", "build-target", "UnrealEditor"])
+    cli(["ue4", "build-target", "ShaderCompileWorker", configuration])
+    cli(["ue4", "build-target", "UnrealLightmass", configuration])
 
 def create_zip_directory(zip_dir):
     log_step(f"Creating zip directory: {zip_dir}", "")
-    cli(['New-Item', zip_dir])
+    cli(["mkdir", zip_dir])
 
 def create_out_directory(out_dir):
     log_step(f"Creating out directory: {out_dir}", "")
-    cli(['New-Item', out_dir])
-
-def build_ue4_components(configuration):
-    ue4_cli(["build-target", "ShaderCompileWorker", configuration])
-    ue4_cli(["build-target", "UnrealLightmass", configuration])
-
-def ue4_cli(args):
-    failed_message = "ue4 cli command failed"
-    try:
-        result = cli(add_args(["ue4"], args))
-        if result != 0:
-            raise Exception(failed_message)
-    except:
-        raise Exception(failed_message)
+    cli(["mkdir", out_dir])
 
 def cli(args):
     try:
@@ -62,11 +50,6 @@ def cli(args):
         return subprocess.call(args)
     except:
         raise Exception("cli call failed")
-
-def add_args(default, args):
-    if (args is None) or (len(args) < 1):
-        return default
-    return default + args
 
 def log_step(step_name, step_output):
     separator = "===================================================="
