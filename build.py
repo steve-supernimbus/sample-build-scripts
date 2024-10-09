@@ -4,6 +4,7 @@ import subprocess
 
 ZIP_DIR = os.path.join(os.getcwd(), "zips")
 OUT_DIR = os.path.join(os.getcwd(), "packaged")
+U_PROJECT_PATH = os.path.join(os.getcwd(), "ClonkBR.uproject")
 BUILD_PARAMS_QUEST_DEBUG = [
     "BuildCookRun",
     "-noP4",
@@ -34,6 +35,7 @@ def main(pre_reqs, mode, target, configuration, maps):
         build_pre_reqs(configuration)
 
     if mode != "server" and mode != "client":
+        log_step("Finished build request.")
         return
 
     create_directory(ZIP_DIR)
@@ -45,6 +47,7 @@ def main(pre_reqs, mode, target, configuration, maps):
         log_step("Successfully built UE4 Server Target")
 
     build_project(mode, target, configuration, maps, OUT_DIR)
+    log_step("Finished build request.")
 
 def build_pre_reqs(configuration):
     log_step("Building Pre Reqs")
@@ -57,6 +60,24 @@ def build_project(mode, target, configuration, maps, out_dir):
         "Building project with following params",
         f"Mode: {mode}, Target: {target}, Configuration: {configuration}, Map: {maps}, Directory: {out_dir"
     )
+    fullArgs = BUILD_PARAMS_QUEST_DEBUG
+    fullArgs += [f"-project={U_PROJECT_PATH}"]
+    fullArgs += [f"-map={maps}"]
+    fullArgs += [f"-configuration={configuration}"]
+
+    if mode == "client":
+        fullArgs += [f"-targetplatform={target}"]
+    else:
+        fullArgs += ["-noclient"]
+
+    if mode == "server":
+        fullArgs += [f"-servertargetplatform={target}", "-server"]
+
+    fullArgs += [f"-archivedirectory={out_dir}"]
+
+    cmd = ["ue4", "uat"] + fullArgs
+    log_step(f"Making the following CLI call: {' '.join(cmd)}")
+    cli(cmd)
 
 def create_directory(dir_path):
     log_step(f"Creating directory : {dir_path}")
@@ -87,7 +108,7 @@ maps: {maps}"""
 def get_script_args():
     parser = argparse.ArgumentParser(description="Build Script")
     parser.add_argument("--pre-reqs", default=False)
-    parser.add_argument("--mode", default=None)
+    parser.add_argument("--mode", default="")
     parser.add_argument("--target", default="Win64")
     parser.add_argument("--configuration", default="Development")
     parser.add_argument("--maps", default=None)

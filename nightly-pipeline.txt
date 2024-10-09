@@ -186,7 +186,7 @@ pipeline {
             steps {
                 dir('project') {
                     unstash 'build'
-                    powershell "python -u build.py --mode server --configuration=Development --maps=${params.MAPS}"
+                    powershell "python -u build.py --mode server --maps=${params.MAPS}"
                 }
             }
         }
