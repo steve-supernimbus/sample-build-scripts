@@ -43,7 +43,7 @@ def main(pre_reqs, mode, target, configuration, maps):
 
     if mode == "server":
         log_step("Build UE4 Server Target")
-        #cli(["ue4", "build", "Development", "Server"])
+        cli(["ue4", "build", "Development", "Server"])
         log_step("Successfully built UE4 Server Target")
 
     build_project(mode, target, configuration, maps, OUT_DIR)
@@ -76,17 +76,16 @@ def build_project(mode, target, configuration, maps, out_dir):
     fullArgs += [f'-archivedirectory="{out_dir}"']
 
     cmd = ["ue4", "uat"] + fullArgs
-    log_step(f"Making the following CLI call: {' '.join(cmd)}")
-    #cli(cmd)
+    cli(cmd)
 
 def create_directory(dir_path):
-    log_step(f"Creating directory : {dir_path}")
+    log_step(f"Creating directory: {dir_path}")
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
 
 def cli(args):
     try:
-        print(f"cli: {subprocess.list2cmdline(args)}")
+        log_step(f"Making the following CLI call: {' '.join(args)}")
         return subprocess.call(args)
     except:
         raise Exception("cli call failed")
