@@ -22,8 +22,8 @@ def main(pre_reqs, client, server, client_target, server_target, configuration, 
         build_pre_reqs(configuration)
 
     if client or server:
-        create_zip_directory(ZIP_DIR)
-        create_out_directory(OUT_DIR)
+        create_directory(ZIP_DIR)
+        create_directory(OUT_DIR)
 
     if server:
         log_step("Build UE4 Server Target", "")
@@ -36,13 +36,17 @@ def build_pre_reqs(configuration):
     cli(["ue4", "build-target", "ShaderCompileWorker", configuration])
     cli(["ue4", "build-target", "UnrealLightmass", configuration])
 
-def create_zip_directory(zip_dir):
-    log_step(f"Creating zip directory: {zip_dir}", "")
-    cli(["powershell", "-Command", f'mkdir "{zip_dir}"'])
+#def create_zip_directory(zip_dir):
+#    log_step(f"Creating zip directory: {zip_dir}", "")
+#    cli(["powershell", "-Command", f'mkdir "{zip_dir}"'])
 
-def create_out_directory(out_dir):
-    log_step(f"Creating out directory: {out_dir}", "")
-    cli(["powershell", "-Command", f'mkdir "{out_dir}"'])
+#def create_out_directory(out_dir):
+#    log_step(f"Creating out directory: {out_dir}", "")
+#    cli(["powershell", "-Command", f'mkdir "{out_dir}"'])
+
+def create_directory(dir_path):
+    if os.path.exists(dir_path):
+        os.makedirs(dir_path)
 
 def cli(args):
     try:
