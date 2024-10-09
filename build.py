@@ -4,31 +4,48 @@ import subprocess
 
 ZIP_DIR = os.path.join(os.getcwd(), "zips")
 OUT_DIR = os.path.join(os.getcwd(), "packaged")
+BUILD_PARAMS_QUEST_DEBUG = [
+    "BuildCookRun",
+    "-noP4",
+    "-clientconfig=Development",
+    "-serverconfig=Development",
+    "-targetplatform=Android",
+    "-platform=Android",
+    "-cookflavor=ASTC",
+    "-build",
+    "-cook",
+    "-stage",
+    "-package",
+    "-compile",
+    "-archive",
+    "-cookflavor=ASTC",
+    "-pak",
+    "-nodebuginfo",
+    "-2017"
+]
 
-def main(pre_reqs, client, server, client_target, server_target, configuration, maps):
+
+def main(pre_reqs, mode, target, configuration, maps):
     log_step(
         "Script Arguments",
-        get_argument_message(
-            pre_reqs,
-            client, server,
-            client_target,
-            server_target,
-            configuration,
-            maps
-        )
+        get_argument_message(pre_reqs, mode, target, configuration, maps)
     )
 
     if pre_reqs:
         build_pre_reqs(configuration)
 
-    if client or server:
-        create_directory(ZIP_DIR)
-        create_directory(OUT_DIR)
+    if mode != "server" and mode != "client":
+        return
 
-    if server:
+    create_directory(ZIP_DIR)
+    create_directory(OUT_DIR)
+
+    if mode == "server":
         log_step("Build UE4 Server Target")
         cli(["ue4", "build", "Development", "Server"])
         log_step("Successfully built UE4 Server Target")
+
+    build_project()
 
 def build_pre_reqs(configuration):
     log_step("Building Pre Reqs")
@@ -43,6 +60,9 @@ def build_pre_reqs(configuration):
 #def create_out_directory(out_dir):
 #    log_step(f"Creating out directory: {out_dir}", "")
 #    cli(["powershell", "-Command", f'mkdir "{out_dir}"'])
+
+def build_project(mode, target, configuration, map_str, out_dir):
+    print()
 
 def create_directory(dir_path):
     log_step(f"Creating directory : {dir_path}")
@@ -63,26 +83,22 @@ def log_step(step_name, step_output="No Output"):
     print(f"Step Output: {step_output}")
     print(separator)
 
-def get_argument_message(pre_reqs, client, server, client_target, server_target, configuration, maps):
+def get_argument_message(pre_reqs, mode, target, configuration, maps):
     return f"""pre-reqs: {pre_reqs},
-client: {client},
-server: {server},
-client_target: {client_target},
-server_target: {server_target},
+mode: {mode},
+target: {target},
 configuration: {configuration}
 maps: {maps}"""
 
 def get_script_args():
     parser = argparse.ArgumentParser(description="Build Script")
     parser.add_argument("--pre-reqs", default=False)
-    parser.add_argument("--client", default=False)
-    parser.add_argument("--server", default=False)
-    parser.add_argument("--client-target", default="Win64")
-    parser.add_argument("--server-target", default="Win64")
+    parser.add_argument("--mode", default="server")
+    parser.add_argument("--target", default="Win64")
     parser.add_argument("--configuration", default="Development")
     parser.add_argument("--maps", default=None)
     return parser.parse_args()
 
 if __name__ == "__main__":
     args = get_script_args()
-    main(args.pre_reqs, args.client, args.server, args.client_target, args.server_target, args.configuration, args.maps)
+    main(args.pre_reqs, args.mode, args.target, args.configuration, args.maps)

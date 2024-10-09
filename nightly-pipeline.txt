@@ -182,11 +182,11 @@ pipeline {
             }
         }
 
-        stage('Build Project') {
+        stage('Build Server') {
             steps {
                 dir('project') {
                     unstash 'build'
-                    powershell "python -u build.py --client True --server True --configuration=Development --maps=${params.MAPS}"
+                    powershell "python -u build.py --mode server --configuration=Development --maps=${params.MAPS}"
                 }
             }
         }
