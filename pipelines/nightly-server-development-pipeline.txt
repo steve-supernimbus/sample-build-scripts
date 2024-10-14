@@ -11,15 +11,12 @@ pipeline {
         string(name: 'SERVER_S3_BUCKET', defaultValue: 'clonk-server-development', description: 'Specify the server S3 Bucket.')
     }
 
-    environment {
-        REMOTE_S3_DIRECTORY = 'nightly-builds'
-    }
-
     triggers {
         cron('H(0-10) 0 * * 1-5')
     }
 
     environment {
+        REMOTE_S3_DIRECTORY = 'nightly-builds'
         WORKSPACE = "jenkins-remote-${JOB_NAME}"
     }
 
@@ -30,7 +27,7 @@ pipeline {
     }
 
     agent {
-        label 'windows-base'
+        label 'windows-base-development'
     }
 
     stages {
@@ -137,7 +134,7 @@ pipeline {
             }
         }
 
-        stage('Upload Builds') {
+        stage('Upload Build') {
             steps {
                 dir('project') {
                     unstash 'upload'
