@@ -43,17 +43,21 @@ def main(pre_reqs, mode, target, configuration, maps):
 
     if mode == "server":
         log_step("Build UE4 Server Target")
-        cli(["ue4", "build", "Development", "Server"])
+        #cli(["ue4", "build", "Development", "Server"])
         log_step("Successfully built UE4 Server Target")
 
     build_project(mode, target, configuration, maps, OUT_DIR)
     log_step("Finished build request.")
+    create_mock_build(OUT_DIR, "mock_build.txt")
+
+    compress_directory(OUT_DIR, ZIP_DIR)
+    log_step(f"Finished compressing {OUT_DIR} to {ZIP_DIR}")
 
 def build_pre_reqs(configuration):
     log_step("Building Pre Reqs")
-    cli(["ue4", "build-target", "UnrealEditor"])
-    cli(["ue4", "build-target", "ShaderCompileWorker", configuration])
-    cli(["ue4", "build-target", "UnrealLightmass", configuration])
+    #cli(["ue4", "build-target", "UnrealEditor"])
+    #cli(["ue4", "build-target", "ShaderCompileWorker", configuration])
+    #cli(["ue4", "build-target", "UnrealLightmass", configuration])
 
 def build_project(mode, target, configuration, maps, out_dir):
     log_step(
@@ -76,12 +80,35 @@ def build_project(mode, target, configuration, maps, out_dir):
     fullArgs += [f'-archivedirectory="{out_dir}"']
 
     cmd = ["ue4", "uat"] + fullArgs
-    cli(cmd)
+    #cli(cmd)
+
+def create_mock_build(out_dir, mock_filename):
+    f = open(os.path.join(out_dir, mock_filename), "w")
+    f.write("This is a mock build file.")
+    f.close()
 
 def create_directory(dir_path):
     log_step(f"Creating directory: {dir_path}")
     if not os.path.exists(dir_path):
         os.makedirs(dir_path)
+
+def compress_directory(out_dir, zip_dir):
+    sub_dirs = get_subdirectories(out_dir)
+
+    for dir in sub_dirs:
+        zip_path(dir, os.path.join(os.getcwd(), zip_dir))
+
+def get_subdirectories(root):
+    sub_dirs = []
+    for it in os.scandir(root):
+        if it.is_dir():
+            sub_dirs.append(it.path)
+    return sub_dirs
+
+def zip_path(source_dir, output_dir):
+    zip_path = os.path.join(output_dir, f"{os.path.basename(source_dir)}.zip")
+    print(f"Zipping {source_dir} to {zip_path}")
+    cli(["7z", "a", zip_path, source_dir])
 
 def cli(args):
     try:
