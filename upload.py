@@ -7,6 +7,7 @@ URLS_FILE_PATH = os.path.join(os.getcwd(), 'urls.txt')
 
 def main(bucket, local_path, remote_path):
     log_step("Begin Upload.")
+    local_path = os.path.join(os.getcwd(), local_path)
     log_step(f"Uploading contents from {local_path}")
     urls = sync_folder(bucket, local_path, remote_path)
     log_step(f"Presigned URLs: {urls}")
