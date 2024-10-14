@@ -3,7 +3,7 @@ import datetime
 import os
 import subprocess
 
-URLS_FILE_PATH = "./urls.txt",
+URLS_FILE_PATH = os.path.join(os.getcwd, 'urls.txt')
 
 def main(bucket, local_path, remote_path):
     log_step("Begin Upload.")
@@ -69,11 +69,11 @@ def get_remote_path(bucket, remote_directory, timestamp, file_name):
 
 def write_urls_file(url_file_path, urls):
     log_step("Writing Presigned URLs to disk.")
-    write_file(url_file_path, '\n'.join(urls))
-    log_step("Successfully write URL to disk")
+    write_file(url_file_path, "\n".join(urls))
+    log_step("Successfully write URLs to disk.")
 
 def write_file(file_name, content):
-    f = open(f"{file_name}", "w")
+    f = open(file_name, "w")
     f.write(content)
     f.close()
 
