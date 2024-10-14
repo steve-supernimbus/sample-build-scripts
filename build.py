@@ -83,7 +83,9 @@ def build_project(mode, target, configuration, maps, out_dir):
     #cli(cmd)
 
 def create_mock_build(out_dir, mock_filename):
-    f = open(os.path.join(out_dir, mock_filename), "w")
+    mock_dir = os.path.join(out_dir, 'mock-build')
+    create_directory(mock_dir)
+    f = open(os.path.join(mock_dir, mock_filename), "w")
     f.write("This is a mock build file.")
     f.close()
 
@@ -93,9 +95,7 @@ def create_directory(dir_path):
         os.makedirs(dir_path)
 
 def compress_directory(out_dir, zip_dir):
-    sub_dirs = get_subdirectories(out_dir)
-
-    for dir in sub_dirs:
+    for dir in get_subdirectories(out_dir):
         zip_path(dir, os.path.join(os.getcwd(), zip_dir))
 
 def get_subdirectories(root):
