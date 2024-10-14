@@ -1,17 +1,15 @@
 import argparse
 import datetime
-import sys
+import os
 import subprocess
 
-file_name = "sample-build-file.txt"
-local_path = f"./{file_name}"
-
-def main(local_path, remote_path, bucket):
+def main(bucket, local_path, remote_path):
     log_step("Begin Upload.")
+    log_step(f"Uploading contents from ${local_path}")
 
-    log_step("Generating remote path.")
-    remote_path = get_remote_path()
-    log_step(remote_path)
+    sync_folder(bucket, local_path, remote_path)
+
+
 
     log_step("Uploading file to S3.")
     upload_file_to_s3(local_path, remote_path)
@@ -26,6 +24,15 @@ def main(local_path, remote_path, bucket):
     log_step("Successfully write URL to disk")
 
     log_step("Finish Uploading.")
+
+def sync_folder(bucket, local_path, remote_path):
+    timestamp = get_timestamp()
+    for dirpath, dir_names, file_names in os.walk(local_path):
+        for file_name in file_names:
+            local_path = os.path.join(dirpath, file_name)
+            remote_file_name = file_name.replace(" ", "-")
+            remote_path = get_remote_path(bucket, remote_path, timestamp, remote_file_name)
+            upload_file_to_s3(local_path, remote_path)
 
 def upload_file_to_s3(local_path, remote_path):
     aws_cli(
@@ -64,10 +71,8 @@ def get_timestamp():
     current_datetime = datetime.datetime.now()
     return current_datetime.strftime("%Y-%m-%d-%H:%M:%S")
 
-def get_remote_path(bucket, remote_path):
-    bucket = "gamelift-tutorial-build-steve"
-    remote_dir = "nightly-builds"
-    return f"s3://{bucket}/{remote_dir}/{get_timestamp()}/{file_name}"
+def get_remote_path(bucket, remote_directory, timestamp, file_name):
+    return f"s3://{bucket}/{remote_directory}/{timestamp}/{file_name}"
 
 def write_file(file_name, content):
     f = open(f"./{file_name}", "w")
@@ -85,9 +90,10 @@ def log_step(step):
 def get_script_args():
     parser = argparse.ArgumentParser(description="Upload Script")
     parser.add_argument("--bucket")
+    parser.add_argument("--local-directory")
     parser.add_argument("--remote-directory")
     return parser.parse_args()
 
 if __name__ == "__main__":
     args = get_script_args()
-    main(args.local_path, args.remote_path, args.bucket)
+    main(args.bucket, args.local_directory, args.remote_directory)

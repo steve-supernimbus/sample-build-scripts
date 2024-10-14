@@ -16,6 +16,7 @@ pipeline {
     }
 
     environment {
+        LOCAL_DIRECTORY = 'client-zips'
         REMOTE_S3_DIRECTORY = 'nightly-builds'
         WORKSPACE = "jenkins-remote-${JOB_NAME}"
     }
@@ -27,7 +28,7 @@ pipeline {
     }
 
     agent {
-        label 'windows-base'
+        label 'windows-base-development'
     }
 
     stages {
@@ -134,11 +135,11 @@ pipeline {
             }
         }
 
-        stage('Upload Builds') {
+        stage('Upload Build') {
             steps {
                 dir('project') {
                     unstash 'upload'
-                    powershell "python -u upload.py --bucket='${env.S3_BUCKET}' --remote-directory='nightly-builds'"
+                    powershell "python -u upload.py --bucket='${params.CLIENT_S3_BUCKET}' --local-directory='${env.LOCAL_DIRECTORY}' --remote-directory='${env.REMOTE_S3_DIRECTORY}'"
                 }
             }
         }
