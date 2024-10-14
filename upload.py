@@ -3,29 +3,18 @@ import datetime
 import os
 import subprocess
 
+URLS_FILE_PATH = "./urls.txt",
+
 def main(bucket, local_path, remote_path):
     log_step("Begin Upload.")
-    log_step(f"Uploading contents from ${local_path}")
-
-    sync_folder(bucket, local_path, remote_path)
-
-
-
-    log_step("Uploading file to S3.")
-    upload_file_to_s3(local_path, remote_path)
-    log_step("Successfully uploaded file to S3.")
-
-    log_step("Generate Presigned URL.")
-    url = generate_presigned_url(remote_path)
-    log_step(url)
-
-    log_step("Writing Presigned URL to disk.")
-    write_file("url.txt", url)
-    log_step("Successfully write URL to disk")
-
+    log_step(f"Uploading contents from {local_path}")
+    urls = sync_folder(bucket, local_path, remote_path)
+    log_step(f"Presigned URLs: {urls}")
+    write_urls_file(URLS_FILE_PATH, urls)
     log_step("Finish Uploading.")
 
 def sync_folder(bucket, local_path, remote_path):
+    urls = []
     timestamp = get_timestamp()
     for dirpath, dir_names, file_names in os.walk(local_path):
         for file_name in file_names:
@@ -33,8 +22,11 @@ def sync_folder(bucket, local_path, remote_path):
             remote_file_name = file_name.replace(" ", "-")
             remote_path = get_remote_path(bucket, remote_path, timestamp, remote_file_name)
             upload_file_to_s3(local_path, remote_path)
+            urls.append(generate_presigned_url(remote_path))
+    return urls
 
 def upload_file_to_s3(local_path, remote_path):
+    log_step(f"Uploading {local_path} to {remote_path}")
     aws_cli(
         [
             "s3",
@@ -47,6 +39,7 @@ def upload_file_to_s3(local_path, remote_path):
     )
 
 def generate_presigned_url(remote_path):
+    log_step(f"Generating pre-signed url for {remote_path}")
     return aws_cli(
         [
             "s3",
@@ -74,8 +67,13 @@ def get_timestamp():
 def get_remote_path(bucket, remote_directory, timestamp, file_name):
     return f"s3://{bucket}/{remote_directory}/{timestamp}/{file_name}"
 
+def write_urls_file(url_file_path, urls):
+    log_step("Writing Presigned URLs to disk.")
+    write_file(url_file_path, '\n'.join(urls))
+    log_step("Successfully write URL to disk")
+
 def write_file(file_name, content):
-    f = open(f"./{file_name}", "w")
+    f = open(f"{file_name}", "w")
     f.write(content)
     f.close()
 
