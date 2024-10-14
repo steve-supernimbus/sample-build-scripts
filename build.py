@@ -2,8 +2,6 @@ import argparse
 import os
 import subprocess
 
-ZIP_DIR = os.path.join(os.getcwd(), "zips")
-OUT_DIR = os.path.join(os.getcwd(), "packaged")
 U_PROJECT_PATH = os.path.join(os.getcwd(), "ClonkBR.uproject")
 BUILD_PARAMS = [
     "BuildCookRun",
@@ -38,20 +36,23 @@ def main(pre_reqs, mode, target, configuration, maps):
         log_step("Finished build request.")
         return
 
-    create_directory(ZIP_DIR)
-    create_directory(OUT_DIR)
+    zip_dir = os.path.join(os.getcwd(), f"{mode}-zips")
+    out_dir = os.path.join(os.getcwd(), f"{mode}-packaged")
+
+    create_directory(zip_dir)
+    create_directory(out_dir)
 
     if mode == "server":
         log_step("Build UE4 Server Target")
         #cli(["ue4", "build", "Development", "Server"])
         log_step("Successfully built UE4 Server Target")
 
-    build_project(mode, target, configuration, maps, OUT_DIR)
+    build_project(mode, target, configuration, maps, out_dir)
     log_step("Finished build request.")
-    create_mock_build(OUT_DIR, "mock_build.txt")
+    create_mock_build(out_dir, "mock_build.txt")
 
-    compress_directory(OUT_DIR, ZIP_DIR)
-    log_step(f"Finished compressing {OUT_DIR} to {ZIP_DIR}")
+    compress_directory(out_dir, zip_dir)
+    log_step(f"Finished compressing {out_dir} to {zip_dir}")
 
 def build_pre_reqs(configuration):
     log_step("Building Pre Reqs")

@@ -8,12 +8,11 @@ pipeline {
         string(name: 'EMAIL_REPLY_TO', defaultValue: 'stephen@supernimbus.net', description: 'Specify the reply-to email.')
         string(name: 'MAPS', defaultValue: '/Game/Clonk/Maps/TestLevels/TestLevel_HubMap_Mobile+/Game/Clonk/Maps/TestLevels/LVL_ClayYeetsShowcase', description: 'Specify the Maps.')
         string(name: 'SLACK_NOTIFICATION_WEBHOOK', defaultValue: 'todo', description: 'Specify a slack notification webhook.')
-        string(name: 'CLIENT_S3_BUCKET', defaultValue: 'clonk-client-development', description: 'Specify the client S3 Bucket.')
         string(name: 'SERVER_S3_BUCKET', defaultValue: 'clonk-server-development', description: 'Specify the server S3 Bucket.')
     }
 
     environment {
-        ZIP_DIR = '.\\zips'
+        REMOTE_S3_DIRECTORY = 'nightly-builds'
     }
 
     triggers {
@@ -129,15 +128,6 @@ pipeline {
             }
         }
 
-        stage('Build Client') {
-            steps {
-                dir('project') {
-                    unstash 'build'
-                    powershell "python -u build.py --mode client --maps=${params.MAPS}"
-                }
-            }
-        }
-
         stage('Build Server') {
             steps {
                 dir('project') {
@@ -147,7 +137,7 @@ pipeline {
             }
         }
 
-        stage('Upload Build') {
+        stage('Upload Builds') {
             steps {
                 dir('project') {
                     unstash 'upload'
