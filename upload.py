@@ -23,7 +23,7 @@ def sync_folder(bucket, local_path, remote_path):
             remote_file_name = file_name.replace(" ", "-")
             remote_path = get_remote_path(bucket, remote_path, timestamp, remote_file_name)
             upload_file_to_s3(local_path, remote_path)
-            urls.append(generate_presigned_url(remote_path))
+            urls.append(generate_presigned_url(remote_path).strip())
     return urls
 
 def upload_file_to_s3(local_path, remote_path):
@@ -82,7 +82,7 @@ def log_step(step):
     separator = "===================================================="
     new_line = "\n"
     print(separator)
-    print(f"Build Step: {step}")
+    print(f"Step: {step}")
     print(separator)
     print(new_line)
 
