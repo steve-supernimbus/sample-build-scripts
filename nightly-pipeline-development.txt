@@ -1,8 +1,4 @@
 pipeline {
-    triggers {
-        cron('H(0-10) 0 * * 1-5')
-    }
-
     parameters {
         string(name: 'ENGINE_OVERRIDE_NAME', defaultValue: 'MultiplayerEngine.ini', description: 'Specify the engine override name')
         string(name: 'DEPOT_SOURCE', defaultValue: '//depot/ClonkBR/...', description: 'Specify the Perforce depot source.')
@@ -11,6 +7,17 @@ pipeline {
         string(name: 'EMAIL_LIST', defaultValue: 'stephen@supernimbus.net', description: 'Specify emails of people who want to be notified of build results. Separate emails with a comma. Do not include whitespace')
         string(name: 'EMAIL_REPLY_TO', defaultValue: 'stephen@supernimbus.net', description: 'Specify the reply-to email.')
         string(name: 'MAPS', defaultValue: '/Game/Clonk/Maps/TestLevels/TestLevel_HubMap_Mobile+/Game/Clonk/Maps/TestLevels/LVL_ClayYeetsShowcase', description: 'Specify the Maps.')
+        string(name: 'SLACK_NOTIFICATION_WEBHOOK', defaultValue: 'todo', description: 'Specify a slack notification webhook.')
+        string(name: 'CLIENT_S3_BUCKET', defaultValue: 'clonk-client-development', description: 'Specify the client S3 Bucket.')
+        string(name: 'SERVER_S3_BUCKET', defaultValue: 'clonk-server-development', description: 'Specify the server S3 Bucket.')
+    }
+
+    environment {
+        ZIP_DIR = '.\\zips'
+    }
+
+    triggers {
+        cron('H(0-10) 0 * * 1-5')
     }
 
     environment {
@@ -60,67 +67,7 @@ pipeline {
                 }
             }
         }
-
-        stage('Setup P4 Config') {
-            steps {
-                echo 'STAGE - Setup P4'
-                dir('project') {
-                    echo('Cleaning up existing P4Config file')
-                    powershell('if (Test-Path P4CONFIG.txt) { Remove-Item P4CONFIG.txt }')
-
-                    echo('Creating P4CONFIG file')
-                    powershell('New-Item -Path "P4CONFIG.txt" -ItemType File')
-
-                    withCredentials(
-                        [
-                            usernamePassword(
-                                credentialsId: 'p4-user',
-                                passwordVariable: 'PSW',
-                                usernameVariable: 'USR'
-                            ),
-                            string(credentialsId: 'p4-port', variable: 'PRT')
-                        ]
-                    ) {
-                        powershell('Add-Content -Path "P4CONFIG.txt" -Value P4USER=$Env:USR')
-                        powershell('Add-Content -Path "P4CONFIG.txt" -Value P4PASSWD=$Env:PSW')
-                        powershell('Add-Content -Path "P4CONFIG.txt" -Value P4PORT=$Env:PRT')
-                        powershell('Add-Content -Path "P4CONFIG.txt" -Value P4CLIENT=jenkins-remote')
-                    }
-
-                    echo('Setting P4 Config')
-                    powershell('p4 set P4CONFIG=P4CONFIG.txt')
-
-                    echo('Setting P4 trust to allow connection to server')
-                    powershell('p4 trust -y')
-                    powershell('p4 info')
-
-                    echo('Preview syncing P4')
-                    p4sync charset: 'none', credential: 'p4-creds', format: "jenkins-remote", populate: previewOnly(quiet: true), source: depotSource("${params.DEPOT_SOURCE}")
-
-                    echo('Saving latest changelist number to env variable')
-
-                    //script {
-                    //    CHANGELIST = powershell(returnStdout: true, script: 'p4 changes -m1 ${params.DEPOT_SOURCE} | Select-String "Change" | ForEach-Object { $_.ToString().Split(" ")[1] }')
-                    //    REMOTE_FOLDER = "${env.BUILD_TAG}" + "@revision-" + CHANGELIST
-                    //}
-                    //powershell "echo 'Remote Folder will be: ${REMOTE_FOLDER}'"
-
-                    echo('Syncing P4')
-                    powershell('p4 set net.tcpsize=524288')
-                    powershell('p4 sync -q -f --parallel "threads=4,batch=8,batchsize=524288,min=9,minsize=589824" ${params.DEPOT_SOURCE}')
-                }
-            }
-        }
-
-        stage('Clean Edits') {
-            steps {
-                dir("project\\Config") {
-                    echo 'Cleaning Config...'
-                    powershell 'p4 clean -e -l'
-                }
-            }
-        }
-
+        
         stage('Sync Project Files') {
             steps {
                 echo 'STAGE - Sync Project Files'
@@ -200,15 +147,11 @@ pipeline {
             }
         }
 
-        stage('Upload Project') {
+        stage('Upload Build') {
             steps {
                 dir('project') {
                     unstash 'upload'
-                    powershell "python -u upload.py"
-                    
-                    script {
-                        env.BUILD_URLS = readFile('url.txt').trim()
-                    }
+                    powershell "python -u upload.py --bucket='${env.S3_BUCKET}' --remote-directory='nightly-builds'"
                 }
             }
         }

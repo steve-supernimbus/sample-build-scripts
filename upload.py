@@ -1,3 +1,4 @@
+import argparse
 import datetime
 import sys
 import subprocess
@@ -5,7 +6,7 @@ import subprocess
 file_name = "sample-build-file.txt"
 local_path = f"./{file_name}"
 
-def main(argv):
+def main(local_path, remote_path, bucket):
     log_step("Begin Upload.")
 
     log_step("Generating remote path.")
@@ -22,7 +23,7 @@ def main(argv):
 
     log_step("Writing Presigned URL to disk.")
     write_file("url.txt", url)
-    log_step("Successfully ")
+    log_step("Successfully write URL to disk")
 
     log_step("Finish Uploading.")
 
@@ -63,7 +64,7 @@ def get_timestamp():
     current_datetime = datetime.datetime.now()
     return current_datetime.strftime("%Y-%m-%d-%H:%M:%S")
 
-def get_remote_path():
+def get_remote_path(bucket, remote_path):
     bucket = "gamelift-tutorial-build-steve"
     remote_dir = "nightly-builds"
     return f"s3://{bucket}/{remote_dir}/{get_timestamp()}/{file_name}"
@@ -81,5 +82,12 @@ def log_step(step):
     print(separator)
     print(new_line)
 
+def get_script_args():
+    parser = argparse.ArgumentParser(description="Upload Script")
+    parser.add_argument("--bucket")
+    parser.add_argument("--remote-directory")
+    return parser.parse_args()
+
 if __name__ == "__main__":
-    main(sys.argv[1:])
+    args = get_script_args()
+    main(args.local_path, args.remote_path, args.bucket)
