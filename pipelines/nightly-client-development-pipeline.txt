@@ -65,28 +65,28 @@ pipeline {
             }
         }
         
-        //stage('Sync Project Files') {
-        //    steps {
-        //        echo 'STAGE - Sync Project Files'
-        //        dir('project') {
-        //            p4sync(
-        //                charset: 'none',
-        //                credential: 'p4-creds',
-        //                format: "${params.PROJECT_WS}",
-        //                populate: autoClean(
-        //                    delete: true,
-        //                    modtime: false,
-        //                    parallel: [enable: false, minbytes: '1024', minfiles: '1', threads: '4'],
-        //                    pin: '',
-        //                    quiet: true,
-        //                    replace: true,
-        //                    tidy: false
-        //                ),
-        //                source: depotSource("${params.DEPOT_SOURCE}")
-        //            )
-        //        }
-        //    }
-        //}
+        stage('Sync Project Files') {
+            steps {
+                echo 'STAGE - Sync Project Files'
+                dir('project') {
+                    p4sync(
+                        charset: 'none',
+                        credential: 'p4-creds',
+                        format: "${params.PROJECT_WS}",
+                        populate: autoClean(
+                            delete: true,
+                            modtime: false,
+                            parallel: [enable: false, minbytes: '1024', minfiles: '1', threads: '4'],
+                            pin: '',
+                            quiet: true,
+                            replace: true,
+                            tidy: false
+                        ),
+                        source: depotSource("${params.DEPOT_SOURCE}")
+                    )
+                }
+            }
+        }
 
         stage('Make Project Read/Writable') {
             steps {
