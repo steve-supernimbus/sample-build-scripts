@@ -3,7 +3,7 @@ import datetime
 import os
 import subprocess
 
-URLS_FILE_PATH = os.path.join(os.getcwd, 'urls.txt')
+URLS_FILE_PATH = os.path.join(os.getcwd(), 'urls.txt')
 
 def main(bucket, local_path, remote_path):
     log_step("Begin Upload.")
