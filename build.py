@@ -1,6 +1,7 @@
 import argparse
 import os
 import subprocess
+import shutil
 
 U_PROJECT_PATH = os.path.join(os.getcwd(), "ClonkBR.uproject")
 BUILD_PARAMS = [
@@ -91,8 +92,11 @@ def create_mock_build(out_dir, mock_filename):
     f.close()
 
 def create_directory(dir_path):
-    log_step(f"Creating directory: {dir_path}")
+    if os.path.exists(dir_path):
+        log_step(f"Removing directory: {dir_path}")
+        shutil.rmtree(dir_path)
     if not os.path.exists(dir_path):
+        log_step(f"Creating directory: {dir_path}")
         os.makedirs(dir_path)
 
 def compress_directory(out_dir, zip_dir):
