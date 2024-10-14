@@ -139,7 +139,7 @@ pipeline {
             steps {
                 dir('project') {
                     unstash 'upload'
-                    powershell "python -u upload.py --bucket='${params.CLIENT_S3_BUCKET}' --local-directory='${env.LOCAL_DIRECTORY}' --remote-directory='${env.REMOTE_S3_DIRECTORY}'"
+                    powershell "python -u upload.py --bucket='${params.SERVER_S3_BUCKET}' --local-directory='${env.LOCAL_DIRECTORY}' --remote-directory='${env.REMOTE_S3_DIRECTORY}'"
                 }
             }
         }

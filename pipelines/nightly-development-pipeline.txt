@@ -12,8 +12,12 @@ pipeline {
         string(name: 'SERVER_S3_BUCKET', defaultValue: 'clonk-server-development', description: 'Specify the server S3 Bucket.')
     }
 
+    triggers {
+        cron('H(0-10) 0 * * 1-5')
+    }
+
     environment {
-        REMOTE_S3_DIRECTORY = 'incremental-builds'
+        REMOTE_S3_DIRECTORY = 'nightly-builds'
         WORKSPACE = "jenkins-remote-${JOB_NAME}"
     }
 
