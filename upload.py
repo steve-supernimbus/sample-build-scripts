@@ -40,8 +40,8 @@ def upload_file_to_s3(local_path, remote_path):
             "cp",
             local_path,
             remote_path,
-            "--storage-class=INTELLIGENT_TIERING",
             "--no-progress",
+            "--storage-class=INTELLIGENT_TIERING",
         ]
     )
 
@@ -77,7 +77,7 @@ def get_remote_path(bucket, remote_directory, timestamp, file_name):
 
 def append_urls_file(url_file_path, urls):
     log_step("Writing Presigned URLs to disk.")
-    append_file(url_file_path, " ".join(urls))
+    append_file(url_file_path, "\n".join(urls))
     log_step("Successfully write URLs to disk.")
 
 def append_file(url_file_path, content):
