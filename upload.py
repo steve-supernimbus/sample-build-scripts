@@ -17,7 +17,7 @@ def main(bucket, local_path, remote_path, clean):
     log_step(f"Uploading contents from {local_path}")
     urls = sync_folder(bucket, local_path, remote_path)
     log_step(f"Presigned URLs: {urls}")
-    append_urls_file(URLS_FILE_PATH, urls)
+    append_file(URLS_FILE_PATH, urls)
     log_step("Finish Uploading.")
 
 def sync_folder(bucket, local_path, remote_path):
@@ -73,17 +73,14 @@ def get_timestamp():
     return current_datetime.strftime("%Y-%m-%d-%H:%M:%S")
 
 def get_remote_path(bucket, remote_directory, timestamp, file_name):
-    return f"s3://{bucket}/{remote_directory}/{timestamp}/{file_name}"
+    return f"s3://{bucket}/{remote_directory}/{timestamp}/{file_name}"    
 
-def append_urls_file(url_file_path, urls):
+def append_file(url_file_path, urls):
     log_step("Writing Presigned URLs to disk.")
-    append_file(url_file_path, "\n".join(urls))
-    log_step("Successfully write URLs to disk.")
-
-def append_file(url_file_path, content):
     f = open(url_file_path, "a")
-    f.write(content)
+    f.writelnes('\n'.urls)
     f.close()
+    log_step("Successfully write URLs to disk.")
 
 def clear_urls_file(url_file_path):
     f = open(url_file_path, "w")
