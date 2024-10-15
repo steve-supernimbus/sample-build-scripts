@@ -8,7 +8,7 @@ URLS_FILE_PATH = os.path.join(os.getcwd(), 'urls.txt')
 def main(bucket, local_path, remote_path, clean):
     if clean:
         log_step(f"Cleaning URLs file: {URLS_FILE_PATH}")
-        clear_urls_file(URLS_FILE_PATH)
+        clear_file(URLS_FILE_PATH)
         log_step(f"Cleared URLs file: {URLS_FILE_PATH}")
         return
 
@@ -78,11 +78,11 @@ def get_remote_path(bucket, remote_directory, timestamp, file_name):
 def append_file(url_file_path, urls):
     log_step("Writing Presigned URLs to disk.")
     f = open(url_file_path, "a")
-    f.writelines('\n'.join(urls))
+    f.writelines("\n".join(urls))
     f.close()
     log_step("Successfully write URLs to disk.")
 
-def clear_urls_file(url_file_path):
+def clear_file(url_file_path):
     f = open(url_file_path, "w")
     f.write('')
     f.close()
