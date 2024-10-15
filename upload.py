@@ -79,6 +79,7 @@ def append_file(url_file_path, urls):
     log_step("Writing Presigned URLs to disk.")
     f = open(url_file_path, "a")
     f.writelines("\n".join(urls))
+    f.writelines("\n")
     f.close()
     log_step("Successfully write URLs to disk.")
 
