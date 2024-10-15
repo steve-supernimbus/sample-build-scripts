@@ -78,7 +78,7 @@ def get_remote_path(bucket, remote_directory, timestamp, file_name):
 def append_file(url_file_path, urls):
     log_step("Writing Presigned URLs to disk.")
     f = open(url_file_path, "a")
-    f.writelnes('\n'.urls)
+    f.writelines('\n'.urls)
     f.close()
     log_step("Successfully write URLs to disk.")
 
