@@ -126,6 +126,15 @@ pipeline {
             }
         }
 
+        stage('Clean Environment') {
+            steps {
+                dir('project') {
+                    unstash 'upload'
+                    powershell "python -u upload.py --clean=True"
+                }
+            }
+        }
+
         stage('Build Client') {
             steps {
                 dir('project') {

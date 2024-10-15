@@ -5,13 +5,19 @@ import subprocess
 
 URLS_FILE_PATH = os.path.join(os.getcwd(), 'urls.txt')
 
-def main(bucket, local_path, remote_path):
+def main(bucket, local_path, remote_path, clean):
+    if clean:
+        log_step(f"Cleaning URLs file: {URLS_FILE_PATH}")
+        clear_urls_file(URLS_FILE_PATH)
+        log_step(f"Cleared URLs file: {URLS_FILE_PATH}")
+        return
+
     log_step("Begin Upload.")
     local_path = os.path.join(os.getcwd(), local_path)
     log_step(f"Uploading contents from {local_path}")
     urls = sync_folder(bucket, local_path, remote_path)
     log_step(f"Presigned URLs: {urls}")
-    write_urls_file(URLS_FILE_PATH, urls)
+    append_urls_file(URLS_FILE_PATH, urls)
     log_step("Finish Uploading.")
 
 def sync_folder(bucket, local_path, remote_path):
@@ -69,14 +75,19 @@ def get_timestamp():
 def get_remote_path(bucket, remote_directory, timestamp, file_name):
     return f"s3://{bucket}/{remote_directory}/{timestamp}/{file_name}"
 
-def write_urls_file(url_file_path, urls):
+def append_urls_file(url_file_path, urls):
     log_step("Writing Presigned URLs to disk.")
-    write_file(url_file_path, " ".join(urls))
+    append_file(url_file_path, " ".join(urls))
     log_step("Successfully write URLs to disk.")
 
-def write_file(file_name, content):
-    f = open(file_name, "w")
+def append_file(url_file_path, content):
+    f = open(url_file_path, "a")
     f.write(content)
+    f.close()
+
+def clear_urls_file(url_file_path):
+    f = open(url_file_path, "w")
+    f.write('')
     f.close()
 
 def log_step(step):
@@ -92,8 +103,9 @@ def get_script_args():
     parser.add_argument("--bucket")
     parser.add_argument("--local-directory")
     parser.add_argument("--remote-directory")
+    parser.add_argument("--clean", default=False)
     return parser.parse_args()
 
 if __name__ == "__main__":
     args = get_script_args()
-    main(args.bucket, args.local_directory, args.remote_directory)
+    main(args.bucket, args.local_directory, args.remote_directory, args.clean)
