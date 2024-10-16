@@ -3,7 +3,7 @@ pipeline {
         string(name: 'ENGINE_OVERRIDE_NAME', defaultValue: 'MultiplayerEngine.ini', description: 'Specify the engine override name')
         string(name: 'DEPOT_SOURCE', defaultValue: '//depot/ClonkBR/...', description: 'Specify the Perforce depot source.')
         string(name: 'BUILD_SCRIPTS_REPO', defaultValue: 'https://github.com/steve-supernimbus/sample-build-scripts', description: 'Specify the Github build script repository.')
-        string(name: 'PROJECT_WS', defaultValue: 'GameLiftTutorial-Nightly', description: 'Specify the projects workspace')
+        string(name: 'PROJECT_WS', defaultValue: 'GameLiftTutorial-Incremental', description: 'Specify the projects workspace')
         string(name: 'EMAIL_LIST', defaultValue: 'stephen@supernimbus.net', description: 'Specify emails of people who want to be notified of build results. Separate emails with a comma. Do not include whitespace')
         string(name: 'EMAIL_REPLY_TO', defaultValue: 'stephen@supernimbus.net', description: 'Specify the reply-to email.')
         string(name: 'MAPS', defaultValue: '/Game/Clonk/Maps/TestLevels/TestLevel_HubMap_Mobile+/Game/Clonk/Maps/TestLevels/LVL_ClayYeetsShowcase', description: 'Specify the Maps.')
@@ -162,7 +162,7 @@ pipeline {
             }
         }
 
-        stage('Upload Build') {
+        stage('Upload Server Build') {
             steps {
                 dir('project') {
                     unstash 'upload'
@@ -170,40 +170,50 @@ pipeline {
                 }
             }
         }
+
+        stage('Get Upload URLs') {
+            steps {
+                dir('project') {
+                    script {
+                        env.BUILD_URLS = readFile('urls.txt').trim()
+                    }
+                }
+            }
+        }
     }
 
-//    post {
-//        success {
-//            echo "Build completed: SUCCESS"
-//            emailext(
-//                attachLog: true,
-//                body: """Successful - Jenkins Build - ${env.JOB_NAME}
-//--------------------------------------------------------------------------------------
-//${env.JOB_NAME} built successfully.
-//
-//Build URL: ${env.BUILD_URLS}
-//--------------------------------------------------------------------------------------
-//""",
-//                compressLog: true,
-//                replyTo: "${params.EMAIL_REPLY_TO}",
-//                subject: "Successful - Jenkins Build- ${env.JOB_NAME}",
-//                to: "${params.EMAIL_LIST}"
-//            )
-//        }
-//        failure {
-//            echo "Build completed: FAILURE"
-//            emailext(
-//                attachLog: true,
-//                body: """Failure - Jenkins Build- ${env.JOB_NAME}
-//--------------------------------------------------------------------------------------
-//${env.JOB_NAME} built with errors.
-//--------------------------------------------------------------------------------------
-//""",
-//                compressLog: true,
-//                replyTo: "${params.EMAIL_REPLY_TO}",
-//                subject: "Failure - Jenkins Build - ${env.JOB_NAME}",
-//                to: "${params.EMAIL_LIST}"
-//            )
-//        }
-//    }
+    post {
+        success {
+            echo "Build completed: SUCCESS"
+            emailext(
+                attachLog: true,
+                body: """Successful - Jenkins Nightly Build - ${env.JOB_NAME}
+--------------------------------------------------------------------------------------
+${env.JOB_NAME} built successfully.
+
+Build URLs: ${env.BUILD_URLS}
+--------------------------------------------------------------------------------------
+""",
+                compressLog: true,
+                replyTo: "${params.EMAIL_REPLY_TO}",
+                subject: "Successful - Jenkins Nightly Build- ${env.JOB_NAME}",
+                to: "${params.EMAIL_LIST}"
+            )
+        }
+        failure {
+            echo "Build completed: FAILURE"
+            emailext(
+                attachLog: true,
+                body: """Failure - Jenkins Nightly Build- ${env.JOB_NAME}
+--------------------------------------------------------------------------------------
+${env.JOB_NAME} built with errors.
+--------------------------------------------------------------------------------------
+""",
+                compressLog: true,
+                replyTo: "${params.EMAIL_REPLY_TO}",
+                subject: "Failure - Jenkins Nightly Build - ${env.JOB_NAME}",
+                to: "${params.EMAIL_LIST}"
+            )
+        }
+    }
 }

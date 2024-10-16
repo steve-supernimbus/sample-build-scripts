@@ -149,7 +149,7 @@ pipeline {
             }
         }
 
-        stage('Upload Build') {
+        stage('Upload Server Build') {
             steps {
                 dir('project') {
                     unstash 'upload'
@@ -157,40 +157,50 @@ pipeline {
                 }
             }
         }
+
+        stage('Get Upload URLs') {
+            steps {
+                dir('project') {
+                    script {
+                        env.BUILD_URLS = readFile('urls.txt').trim()
+                    }
+                }
+            }
+        }
     }
 
-//    post {
-//        success {
-//            echo "Build completed: SUCCESS"
-//            emailext(
-//                attachLog: true,
-//                body: """Successful - Jenkins Build - ${env.JOB_NAME}
-//--------------------------------------------------------------------------------------
-//${env.JOB_NAME} built successfully.
-//
-//Build URL: ${env.BUILD_URLS}
-//--------------------------------------------------------------------------------------
-//""",
-//                compressLog: true,
-//                replyTo: "${params.EMAIL_REPLY_TO}",
-//                subject: "Successful - Jenkins Build- ${env.JOB_NAME}",
-//                to: "${params.EMAIL_LIST}"
-//            )
-//        }
-//        failure {
-//            echo "Build completed: FAILURE"
-//            emailext(
-//                attachLog: true,
-//                body: """Failure - Jenkins Build- ${env.JOB_NAME}
-//--------------------------------------------------------------------------------------
-//${env.JOB_NAME} built with errors.
-//--------------------------------------------------------------------------------------
-//""",
-//                compressLog: true,
-//                replyTo: "${params.EMAIL_REPLY_TO}",
-//                subject: "Failure - Jenkins Build - ${env.JOB_NAME}",
-//                to: "${params.EMAIL_LIST}"
-//            )
-//        }
-//    }
+    post {
+        success {
+            echo "Build completed: SUCCESS"
+            emailext(
+                attachLog: true,
+                body: """Successful - Jenkins Incremental Build - ${env.JOB_NAME}
+--------------------------------------------------------------------------------------
+${env.JOB_NAME} built successfully.
+
+Build URL: ${env.BUILD_URLS}
+--------------------------------------------------------------------------------------
+""",
+                compressLog: true,
+                replyTo: "${params.EMAIL_REPLY_TO}",
+                subject: "Successful - Jenkins Incremental Build- ${env.JOB_NAME}",
+                to: "${params.EMAIL_LIST}"
+            )
+        }
+        failure {
+            echo "Build completed: FAILURE"
+            emailext(
+                attachLog: true,
+                body: """Failure - Jenkins Incremental Build- ${env.JOB_NAME}
+--------------------------------------------------------------------------------------
+${env.JOB_NAME} built with errors.
+--------------------------------------------------------------------------------------
+""",
+                compressLog: true,
+                replyTo: "${params.EMAIL_REPLY_TO}",
+                subject: "Failure - Jenkins Incremental Build - ${env.JOB_NAME}",
+                to: "${params.EMAIL_LIST}"
+            )
+        }
+    }
 }
