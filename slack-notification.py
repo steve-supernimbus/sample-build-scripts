@@ -2,12 +2,7 @@ import argparse
 import json
 import requests
 
-COLOR = '#9733EE'
-ICON_EMOJI = ":bulb:"
-CHANNEL = '#channel_name'
-USERNAME = 'Jenkins Build Notification Bot'
-
-def slack_webhook(title, message, webhook):
+def slack_webhook(title, message, webhook, color, icon_emoji, channel, username):
     headers = {
         "Content-Type": "application/json",
     }
@@ -15,7 +10,7 @@ def slack_webhook(title, message, webhook):
         webhook,
         headers=headers,
         data=json.dumps(
-            slack_notification_content(title, message)
+            slack_notification_content(title, message, color, icon_emoji, channel, username)
         ),
     )
 
@@ -24,15 +19,15 @@ def slack_webhook(title, message, webhook):
     else:
         log_step(f"Notification Failed, status code: {response.status_code}")
 
-def slack_notification_content(title, message):
+def slack_notification_content(title, message, color, icon_emoji, channel, username):
     return {
-        "channel": CHANNEL,
-        "username": USERNAME,
-        "icon_emoji": ICON_EMOJI,
+        "channel": channel,
+        "username": username,
+        "icon_emoji": icon_emoji,
         "attachments":
         [
             {
-                "color": COLOR,
+                "color": color,
                 "fields": [
                     {
                         "title": title,
@@ -56,8 +51,20 @@ def get_script_args():
     parser.add_argument("--title")
     parser.add_argument("--message")
     parser.add_argument("--webhook")
+    parser.add_argument("--color", default="#9733EE")
+    parser.add_argument("--icon-emoji", default=":bulb:")
+    parser.add_argument("--channel", default="#channel_name")
+    parser.add_argument("--username", default="Jenkins Build Notification Bot")
     return parser.parse_args()
 
 if __name__ == '__main__':
     args = get_script_args()
-    slack_webhook(args.title, args.message, args.webhook)
+    slack_webhook(
+        args.title,
+        args.message,
+        args.webhook,
+        args.color,
+        args.icon_emoji,
+        args.channel,
+        args.username
+    )
