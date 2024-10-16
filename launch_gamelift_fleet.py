@@ -5,10 +5,35 @@ import subprocess
 import sys
 import time
 
-SLEEP_TIME = 5
+SLEEP_TIME = 10
 FLEET_TYPE = "SPOT"
 INSTANCE_TYPE = "c4.large"
 PROJECT_NAME = "GameliftMultiplayerStarter"
+
+PORTS = json.dumps(
+    [
+        {
+            "FromPort": 7777,
+            "ToPort": 7777,
+            "IpRange": "0.0.0.0/0",
+            "Protocol": "UDP",
+        },
+        {
+            "FromPort": 3389,
+            "ToPort": 3389,
+            "IpRange": "0.0.0.0/0",
+            "Protocol": "TCP",
+        },
+    ]
+)
+
+LOCATIONS = json.dumps(
+    [
+        {"Location": "eu-west-1"},
+        #{"Location": "us-west-1"},
+        #{"Location": "us-east-1"},
+    ]
+)
 
 def main(build_name, build_version, build_path, fleet_name, aws_region):
     launch_path = get_launch_path(PROJECT_NAME, build_path)
@@ -70,44 +95,6 @@ def build_ready_or_failed(build_id):
 
 def create_fleet(name, build_id, launch_path, project_name, environment):
     description = f"Fleet {name} from build {build_id} created from Jenkins"
-
-    ports = json.dumps(
-        [
-            {
-                "FromPort": 7777,
-                "ToPort": 7777,
-                "IpRange": "0.0.0.0/0",
-                "Protocol": "UDP",
-            },
-            {
-                "FromPort": 3389,
-                "ToPort": 3389,
-                "IpRange": "0.0.0.0/0",
-                "Protocol": "TCP",
-            },
-        ]
-    )
-
-    runtime_configuration = json.dumps(
-        {
-            "ServerProcesses": [
-                {
-                    "LaunchPath": f"C:\game\{launch_path}",
-                    "ConcurrentExecutions": 3,
-                }
-            ],
-            "GameSessionActivationTimeoutSeconds": 600,
-        }
-    )
-
-    locations = json.dumps(
-        [
-            {"Location": "eu-west-1"},
-            #{"Location": "us-west-1"},
-            #{"Location": "us-east-1"},
-        ]
-    )
-
     tags = json.dumps(
         [
             {"Key": "dev", "Value": "Jenkins"},
@@ -115,7 +102,6 @@ def create_fleet(name, build_id, launch_path, project_name, environment):
             {"Key": "env", "Value": environment},
         ]
     )
-
     result = aws_cli(
         [
             "gamelift",
@@ -127,7 +113,7 @@ def create_fleet(name, build_id, launch_path, project_name, environment):
             "--build-id",
             build_id,
             "--locations",
-            locations,
+            LOCATIONS,
             "--tags",
             tags,
             "--ec2-instance-type",
@@ -135,14 +121,27 @@ def create_fleet(name, build_id, launch_path, project_name, environment):
             "--fleet-type",
             FLEET_TYPE,
             "--ec2-inbound-permissions",
-            ports,
+            PORTS,
             "--runtime-configuration",
-            runtime_configuration,
+            get_runtime_configuration(launch_path),
         ],
         True,
     )
     log_step(f"Created Fleet: {result}")
     return result["FleetAttributes"]["FleetId"]
+
+def get_runtime_configuration(launch_path):
+    return json.dumps(
+        {
+            "ServerProcesses": [
+                {
+                    "LaunchPath": f"C:\game\{launch_path}",
+                    "ConcurrentExecutions": 3,
+                }
+            ],
+            "GameSessionActivationTimeoutSeconds": 600,
+        }
+    )
 
 def write_file(file_path, content):
     with open(file_path, "w") as file:
