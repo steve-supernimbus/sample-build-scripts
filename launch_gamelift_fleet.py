@@ -110,7 +110,7 @@ def create_fleet(name, build_id, launch_path, project_name, environment):
         ],
     )
     json_result = json.loads(result)
-    log_step(f"Fleet Attributes: {result}")
+    log_step(f'Fleet Attributes: {json_result["FleetAttributes"]}')
     return json_result["FleetAttributes"]["FleetId"]
 
 def get_runtime_configuration(launch_path):
