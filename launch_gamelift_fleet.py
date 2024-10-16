@@ -7,29 +7,28 @@ import time
 
 SLEEP_TIME = 10
 FLEET_TYPE = "SPOT"
-CONCERENT_EXECUTIONS = 3
+CONCURRENT_EXECUTIONS = 3
 INSTANCE_TYPE = "c4.large"
+RESULT_FILE_NAME = "result.json"
 OPERATING_SYSTEM = "WINDOWS_2016"
 GAME_SESSION_ACTIVATION_TIMEOUT = 600
 PROJECT_NAME = "GameliftMultiplayerStarter"
-
 PORTS = json.dumps(
     [
         {
-            "FromPort": 7777,
             "ToPort": 7777,
-            "IpRange": "0.0.0.0/0",
+            "FromPort": 7777,
             "Protocol": "UDP",
+            "IpRange": "0.0.0.0/0",
         },
         {
-            "FromPort": 3389,
             "ToPort": 3389,
-            "IpRange": "0.0.0.0/0",
+            "FromPort": 3389,
             "Protocol": "TCP",
+            "IpRange": "0.0.0.0/0",
         },
     ]
 )
-
 LOCATIONS = json.dumps(
     [
         {"Location": "eu-west-1"},
@@ -52,11 +51,10 @@ def main(build_name, build_version, build_path, fleet_name, aws_region):
     fleet_id = create_fleet(
         fleet_name, build_id, launch_path, PROJECT_NAME, "production"
     )
-
     log_step(f"Received Fleet ID: {fleet_id}")
 
     write_file(
-        os.path.join(os.getcwd(), "result.json"), {"fleetId": fleet_id}
+        os.path.join(os.getcwd(), RESULT_FILE_NAME), {"fleetId": fleet_id}
     )
 
 def get_launch_path(project_name, build_path):
@@ -72,16 +70,11 @@ def upload_build(name, version, path, region):
         [
             "gamelift",
             "upload-build",
-            "--name",
-            name,
-            "--build-version",
-            version,
-            "--build-root",
-            path,
-            "--region",
-            region,
-            "--operating-system",
-            OPERATING_SYSTEM,
+            "--name", name,
+            "--build-version", version,
+            "--build-root", path,
+            "--region", region,
+            "--operating-system", OPERATING_SYSTEM,
         ]
     )
     return extract_build_id(result)
@@ -139,7 +132,7 @@ def get_runtime_configuration(launch_path):
             "ServerProcesses": [
                 {
                     "LaunchPath": f"C:\game\{launch_path}",
-                    "ConcurrentExecutions": CONCERENT_EXECUTIONS,
+                    "ConcurrentExecutions": CONCURRENT_EXECUTIONS,
                 }
             ],
             "GameSessionActivationTimeoutSeconds": GAME_SESSION_ACTIVATION_TIMEOUT,
