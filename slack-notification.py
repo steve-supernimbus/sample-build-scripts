@@ -51,9 +51,9 @@ def get_script_args():
     parser.add_argument("--title")
     parser.add_argument("--message")
     parser.add_argument("--webhook")
+    parser.add_argument("--channel")
     parser.add_argument("--color", default="#9733EE")
     parser.add_argument("--icon-emoji", default=":bulb:")
-    parser.add_argument("--channel", default="#channel_name")
     parser.add_argument("--username", default="Jenkins Build Notification Bot")
     return parser.parse_args()
 
