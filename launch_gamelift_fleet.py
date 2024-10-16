@@ -28,10 +28,8 @@ def main(build_name, build_version, build_path, fleet_name, aws_region):
     log_step(f"Received Fleet ID: {fleet_id}")
 
     write_file(
-        os.path.join(os.getcwd(), "result.json"),
-        {"fleetId": fleet_id}
+        os.path.join(os.getcwd(), "result.json"), {"fleetId": fleet_id}
     )
-
 
 def get_launch_path(project_name, build_path):
     launch_path_start = f"{project_name}\Binaries\Win64"
@@ -177,8 +175,8 @@ def aws_cli(args):
 def get_script_args():
     parser = argparse.ArgumentParser(description="Launch GameLift Script")
     parser.add_argument("--build-name")
-    parser.add_argument("--build-version")
     parser.add_argument("--build-path")
+    parser.add_argument("--build-version")
     parser.add_argument("--fleet-name")
     parser.add_argument("--aws-region", default=False)
     return parser.parse_args()
