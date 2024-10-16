@@ -64,7 +64,7 @@ pipeline {
                 }
             }
         }
-        
+
         stage('Sync Project Files') {
             steps {
                 echo 'STAGE - Sync Project Files'

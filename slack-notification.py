@@ -2,19 +2,17 @@ import argparse
 import json
 import requests
 
-WEBHOOK_URL = ''
-
 COLOR = '#9733EE'
 ICON_EMOJI = ":bulb:"
 CHANNEL = '#channel_name'
 USERNAME = 'Jenkins Build Notification Bot'
 
-def slack_webhook(title, message):
+def slack_webhook(title, message, webhook):
     headers = {
         "Content-Type": "application/json",
     }
     response = requests.post(
-        WEBHOOK_URL,
+        webhook,
         headers=headers,
         data=json.dumps(
             slack_notification_content(title, message)
@@ -57,8 +55,9 @@ def get_script_args():
     parser = argparse.ArgumentParser(description="Slack Notification Script")
     parser.add_argument("--title")
     parser.add_argument("--message")
+    parser.add_argument("--webhook")
     return parser.parse_args()
 
 if __name__ == '__main__':
     args = get_script_args()
-    slack_webhook(args.title, args.message)
+    slack_webhook(args.title, args.message, args.webhook)
