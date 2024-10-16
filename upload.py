@@ -7,9 +7,7 @@ URLS_FILE_PATH = os.path.join(os.getcwd(), 'urls.txt')
 
 def main(bucket, local_path, remote_path, clean):
     if clean:
-        log_step(f"Cleaning URLs file: {URLS_FILE_PATH}")
         clear_file(URLS_FILE_PATH)
-        log_step(f"Cleared URLs file: {URLS_FILE_PATH}")
         return
 
     log_step("Begin Upload.")
@@ -84,9 +82,11 @@ def append_file(url_file_path, urls):
     log_step("Successfully write URLs to disk.")
 
 def clear_file(url_file_path):
+    log_step(f"Clearing file: {url_file_path}")
     f = open(url_file_path, "w")
     f.write('')
     f.close()
+    log_step(f"Cleared file: {url_file_path}")
 
 def log_step(step):
     separator = "===================================================="

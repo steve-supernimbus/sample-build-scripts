@@ -11,7 +11,7 @@ USERNAME = 'Jenkins Build Notification Bot'
 
 def slack_webhook(title, message):
     headers = {
-        'Content-Type': "application/json",
+        "Content-Type": "application/json",
     }
     response = requests.post(
         WEBHOOK_URL,
