@@ -32,8 +32,6 @@ PORTS = json.dumps(
 LOCATIONS = json.dumps(
     [
         {"Location": "eu-west-1"},
-        #{"Location": "us-west-1"},
-        #{"Location": "us-east-1"},
     ]
 )
 
@@ -102,24 +100,15 @@ def create_fleet(name, build_id, launch_path, project_name, environment):
         [
             "gamelift",
             "create-fleet",
-            "--name",
-            name,
-            "--description",
-            description,
-            "--build-id",
-            build_id,
-            "--locations",
-            LOCATIONS,
-            "--tags",
-            tags,
-            "--ec2-instance-type",
-            INSTANCE_TYPE,
-            "--fleet-type",
-            FLEET_TYPE,
-            "--ec2-inbound-permissions",
-            PORTS,
-            "--runtime-configuration",
-            get_runtime_configuration(launch_path),
+            "--name", name,
+            "--description", description,
+            "--build-id", build_id,
+            "--locations", LOCATIONS,
+            "--tags", tags,
+            "--ec2-instance-type", INSTANCE_TYPE,
+            "--fleet-type", FLEET_TYPE,
+            "--ec2-inbound-permissions", PORTS,
+            "--runtime-configuration", get_runtime_configuration(launch_path),
         ],
         True,
     )
