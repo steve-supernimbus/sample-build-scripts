@@ -5,8 +5,8 @@ import subprocess
 import sys
 import time
 
-SLEEP_TIME = 10
 FLEET_TYPE = "SPOT"
+BUILD_SLEEP_TIME = 10
 CONCURRENT_EXECUTIONS = 3
 INSTANCE_TYPE = "c4.large"
 RESULT_FILE_NAME = "result.json"
@@ -36,15 +36,15 @@ LOCATIONS = json.dumps(
 )
 
 def main(build_name, build_version, build_path, fleet_name, aws_region):
-    launch_path = get_launch_path(PROJECT_NAME, build_path)
-    log_step(f"Launch Path: {launch_path}")
-
     build_id = upload_build(build_name, build_version, build_path, aws_region)
     log_step(f"Build ID: {build_id}")
 
     while not build_ready_or_failed(build_id):
-        log_step(f"Waiting for build to be ready. Sleeping for {SLEEP_TIME} seconds.")
-        time.sleep(SLEEP_TIME)
+        log_step(f"Waiting for build to be ready. Sleeping for {BUILD_SLEEP_TIME} seconds.")
+        time.sleep(BUILD_SLEEP_TIME)
+
+    launch_path = get_launch_path(build_path)
+    log_step(f"Launch Path: {launch_path}")
 
     fleet_id = create_fleet(
         fleet_name, build_id, launch_path, PROJECT_NAME, "production"
@@ -55,13 +55,11 @@ def main(build_name, build_version, build_path, fleet_name, aws_region):
         os.path.join(os.getcwd(), RESULT_FILE_NAME), {"fleetId": fleet_id}
     )
 
-def get_launch_path(project_name, build_path):
-    launch_path_start = f"{project_name}\Binaries\Win64"
-    exe_path = os.path.join(build_path, launch_path_start)
-    files = os.listdir(exe_path)
+def get_launch_path(build_path):
+    files = os.listdir(build_path)
     exe_files = [file for file in files if file.endswith(".exe")]
     executable_name = os.path.splitext(exe_files[0])[0]
-    return f"{launch_path_start}\{executable_name}.exe"
+    return f"{executable_name}.exe"
 
 def upload_build(name, version, path, region):
     result = aws_cli(
@@ -78,8 +76,9 @@ def upload_build(name, version, path, region):
     return extract_build_id(result)
 
 def build_ready_or_failed(build_id):
-    json = aws_cli(["gamelift", "describe-build", "--build-id", build_id], True)
-    status = json["Build"]["Status"]
+    result = aws_cli(["gamelift", "describe-build", "--build-id", build_id])
+    json_result = json.loads(result)
+    status = json_result["Build"]["Status"]
 
     if status == "ERROR":
         print("Build Uploaded with status: ERROR")
@@ -88,7 +87,6 @@ def build_ready_or_failed(build_id):
     return status == "READY"
 
 def create_fleet(name, build_id, launch_path, project_name, environment):
-    description = f"Fleet {name} from build {build_id} created from Jenkins"
     tags = json.dumps(
         [
             {"Key": "dev", "Value": "Jenkins"},
@@ -101,19 +99,19 @@ def create_fleet(name, build_id, launch_path, project_name, environment):
             "gamelift",
             "create-fleet",
             "--name", name,
-            "--description", description,
             "--build-id", build_id,
-            "--locations", LOCATIONS,
+            #"--locations", LOCATIONS,
             "--tags", tags,
             "--ec2-instance-type", INSTANCE_TYPE,
             "--fleet-type", FLEET_TYPE,
             "--ec2-inbound-permissions", PORTS,
             "--runtime-configuration", get_runtime_configuration(launch_path),
+            "--description", f"Fleet {name} from build {build_id} created from Jenkins.",
         ],
-        True,
     )
-    log_step(f"Created Fleet: {result}")
-    return result["FleetAttributes"]["FleetId"]
+    json_result = json.loads(result)
+    log_step(f"Fleet Attributes: {result}")
+    return json_result["FleetAttributes"]["FleetId"]
 
 def get_runtime_configuration(launch_path):
     return json.dumps(
@@ -133,7 +131,7 @@ def write_file(file_path, content):
         json.dump(content, file)
 
 def extract_build_id(output):
-    parts = output.split(":")
+    parts = output.split("Build ID:")
     return parts[1].strip()
 
 def log_step(step):
@@ -158,13 +156,19 @@ def aws_cli(args):
 
 def get_script_args():
     parser = argparse.ArgumentParser(description="Launch GameLift Script")
-    parser.add_argument("--build-name")
-    parser.add_argument("--build-path")
-    parser.add_argument("--build-version")
-    parser.add_argument("--fleet-name")
-    parser.add_argument("--aws-region", default=False)
+    parser.add_argument("--build-name", default="test-build")
+    parser.add_argument("--fleet-name", default="test-fleet")
+    parser.add_argument("--build-version", default="0.0.1")
+    parser.add_argument("--build-path", default="..\\project\\Packaged\\WindowsServer")
+    parser.add_argument("--aws-region", default="eu-west-1")
     return parser.parse_args()
 
 if __name__ == "__main__":
     args = get_script_args()
-    main(args.build_name, args.build_version, args.build_path, args.fleet_name, args.aws_region)
+    main(
+        args.build_name,
+        args.build_version,
+        args.build_path,
+        args.fleet_name,
+        args.aws_region
+    )
