@@ -10,10 +10,11 @@ def slack_webhook(title, message, webhook, color, icon_emoji, channel, username)
         webhook,
         headers=headers,
         data=json.dumps(
-            slack_notification_content(title, message, color, icon_emoji, channel, username)
+            slack_notification_content(
+                title, message, color, icon_emoji, channel, username
+            )
         ),
     )
-
     if response.status_code == 200:
         log_step("Slack Notification Sent.")
     else:
