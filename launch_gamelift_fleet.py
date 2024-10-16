@@ -7,7 +7,10 @@ import time
 
 SLEEP_TIME = 10
 FLEET_TYPE = "SPOT"
+CONCERENT_EXECUTIONS = 3
 INSTANCE_TYPE = "c4.large"
+OPERATING_SYSTEM = "WINDOWS_2016"
+GAME_SESSION_ACTIVATION_TIMEOUT = 600
 PROJECT_NAME = "GameliftMultiplayerStarter"
 
 PORTS = json.dumps(
@@ -78,7 +81,7 @@ def upload_build(name, version, path, region):
             "--region",
             region,
             "--operating-system",
-            "WINDOWS_2016",
+            OPERATING_SYSTEM,
         ]
     )
     return extract_build_id(result)
@@ -136,10 +139,10 @@ def get_runtime_configuration(launch_path):
             "ServerProcesses": [
                 {
                     "LaunchPath": f"C:\game\{launch_path}",
-                    "ConcurrentExecutions": 3,
+                    "ConcurrentExecutions": CONCERENT_EXECUTIONS,
                 }
             ],
-            "GameSessionActivationTimeoutSeconds": 600,
+            "GameSessionActivationTimeoutSeconds": GAME_SESSION_ACTIVATION_TIMEOUT,
         }
     )
 
