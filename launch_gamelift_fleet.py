@@ -13,27 +13,24 @@ RESULT_FILE_NAME = "result.json"
 OPERATING_SYSTEM = "WINDOWS_2016"
 GAME_SESSION_ACTIVATION_TIMEOUT = 600
 PROJECT_NAME = "GameliftMultiplayerStarter"
-PORTS = json.dumps(
-    [
-        {
-            "ToPort": 7777,
-            "FromPort": 7777,
-            "Protocol": "UDP",
-            "IpRange": "0.0.0.0/0",
-        },
-        {
-            "ToPort": 3389,
-            "FromPort": 3389,
-            "Protocol": "TCP",
-            "IpRange": "0.0.0.0/0",
-        },
-    ]
-)
-LOCATIONS = json.dumps(
-    [
-        {"Location": "eu-west-1"},
-    ]
-)
+PORTS = [
+    {
+        "ToPort": 7777,
+        "FromPort": 7777,
+        "Protocol": "UDP",
+        "IpRange": "0.0.0.0/0",
+    },
+    {
+        "ToPort": 3389,
+        "FromPort": 3389,
+        "Protocol": "TCP",
+        "IpRange": "0.0.0.0/0",
+    },
+]
+LOCATIONS = [
+    {"Location": "eu-west-1"},
+    {"Location": "us-east-1"},
+]
 
 def main(build_name, build_version, build_path, fleet_name, aws_region):
     build_id = upload_build(build_name, build_version, build_path, aws_region)
@@ -47,7 +44,7 @@ def main(build_name, build_version, build_path, fleet_name, aws_region):
     log_step(f"Launch Path: {launch_path}")
 
     fleet_id = create_fleet(
-        fleet_name, build_id, launch_path, PROJECT_NAME, "production"
+        fleet_name, build_id, launch_path, PROJECT_NAME, aws_region, "production"
     )
     log_step(f"Received Fleet ID: {fleet_id}")
 
@@ -86,28 +83,27 @@ def build_ready_or_failed(build_id):
 
     return status == "READY"
 
-def create_fleet(name, build_id, launch_path, project_name, environment):
-    tags = json.dumps(
-        [
-            {"Key": "dev", "Value": "Jenkins"},
-            {"Key": "game", "Value": project_name},
-            {"Key": "env", "Value": environment},
-        ]
-    )
+def create_fleet(name, build_id, launch_path, project_name, region, environment):
+    tags = [
+        {"Key": "dev", "Value": "Jenkins"},
+        {"Key": "game", "Value": project_name},
+        {"Key": "env", "Value": environment},
+    ]
     result = aws_cli(
         [
             "gamelift",
             "create-fleet",
             "--name", name,
-            "--tags", tags,
+            "--region", region,
             "--build-id", build_id,
-            #"--locations", LOCATIONS,
             "--fleet-type", FLEET_TYPE,
-            "--ec2-inbound-permissions", PORTS,
+            "--tags", json.dumps(tags),
             "--ec2-instance-type", INSTANCE_TYPE,
+            "--locations", json.dumps(LOCATIONS),
+            "--ec2-inbound-permissions", json.dumps(PORTS),
             "--runtime-configuration", get_runtime_configuration(launch_path),
             "--description", f"Fleet {name} from {build_id} created from Jenkins.",
-        ],
+        ]
     )
     json_result = json.loads(result)
     log_step(f'Fleet Attributes: {json_result["FleetAttributes"]}')
