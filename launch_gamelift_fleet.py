@@ -67,9 +67,9 @@ def upload_build(name, version, path, region):
             "gamelift",
             "upload-build",
             "--name", name,
-            "--build-version", version,
-            "--build-root", path,
             "--region", region,
+            "--build-root", path,
+            "--build-version", version,
             "--operating-system", OPERATING_SYSTEM,
         ]
     )
@@ -99,14 +99,14 @@ def create_fleet(name, build_id, launch_path, project_name, environment):
             "gamelift",
             "create-fleet",
             "--name", name,
+            "--tags", tags,
             "--build-id", build_id,
             #"--locations", LOCATIONS,
-            "--tags", tags,
-            "--ec2-instance-type", INSTANCE_TYPE,
             "--fleet-type", FLEET_TYPE,
             "--ec2-inbound-permissions", PORTS,
+            "--ec2-instance-type", INSTANCE_TYPE,
             "--runtime-configuration", get_runtime_configuration(launch_path),
-            "--description", f"Fleet {name} from build {build_id} created from Jenkins.",
+            "--description", f"Fleet {name} from {build_id} created from Jenkins.",
         ],
     )
     json_result = json.loads(result)
@@ -118,7 +118,7 @@ def get_runtime_configuration(launch_path):
         {
             "ServerProcesses": [
                 {
-                    "LaunchPath": f"C:\game\{launch_path}",
+                    "LaunchPath": f"C:\Game\{launch_path}",
                     "ConcurrentExecutions": CONCURRENT_EXECUTIONS,
                 }
             ],
@@ -136,11 +136,10 @@ def extract_build_id(output):
 
 def log_step(step):
     separator = "===================================================="
-    new_line = "\n"
     print(separator)
     print(f"Step: {step}")
     print(separator)
-    print(new_line)
+    print("\n")
 
 def aws_cli(args):
     aws_call = ["aws"] + args
