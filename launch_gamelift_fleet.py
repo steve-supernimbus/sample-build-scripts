@@ -13,7 +13,7 @@ LAUNCH_PATH_ROOT = "C:\game\\"
 RESULT_FILE_NAME = "result.json"
 OPERATING_SYSTEM = "WINDOWS_2016"
 GAME_SESSION_ACTIVATION_TIMEOUT = 600
-PROJECT_NAME = "GameliftMultiplayerStarter"
+PROJECT_NAME = "ClonkBR"
 PORTS = [
     {
         "ToPort": 7796,
