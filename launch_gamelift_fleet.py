@@ -16,7 +16,7 @@ GAME_SESSION_ACTIVATION_TIMEOUT = 600
 PROJECT_NAME = "GameliftMultiplayerStarter"
 PORTS = [
     {
-        "ToPort": 7777,
+        "ToPort": 7796,
         "FromPort": 7777,
         "Protocol": "UDP",
         "IpRange": "0.0.0.0/0",
