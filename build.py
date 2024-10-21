@@ -50,7 +50,6 @@ def main(pre_reqs, mode, target, configuration, maps):
 
     build_project(mode, target, configuration, maps, out_dir)
     log_step("Finished build request.")
-    #create_mock_build(out_dir, "mock_build.txt")
 
     compress_directory(out_dir, zip_dir)
     log_step(f"Finished compressing {out_dir} to {zip_dir}")
@@ -118,7 +117,7 @@ def zip_path(source_dir, output_dir):
 def cli(args):
     try:
         log_step(f"Making the following CLI call: {' '.join(args)}")
-        return subprocess.call(args)
+        return subprocess.run(args)
     except:
         raise Exception("cli call failed")
 
