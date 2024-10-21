@@ -45,21 +45,21 @@ def main(pre_reqs, mode, target, configuration, maps):
 
     if mode == "server":
         log_step("Build UE4 Server Target")
-        #cli(["ue4", "build", "Development", "Server"])
+        cli(["ue4", "build", "Development", "Server"])
         log_step("Successfully built UE4 Server Target")
 
     build_project(mode, target, configuration, maps, out_dir)
     log_step("Finished build request.")
-    create_mock_build(out_dir, "mock_build.txt")
+    #create_mock_build(out_dir, "mock_build.txt")
 
     compress_directory(out_dir, zip_dir)
     log_step(f"Finished compressing {out_dir} to {zip_dir}")
 
 def build_pre_reqs(configuration):
     log_step("Building Pre Reqs")
-    #cli(["ue4", "build-target", "UnrealEditor"])
-    #cli(["ue4", "build-target", "ShaderCompileWorker", configuration])
-    #cli(["ue4", "build-target", "UnrealLightmass", configuration])
+    cli(["ue4", "build-target", "UnrealEditor"])
+    cli(["ue4", "build-target", "ShaderCompileWorker", configuration])
+    cli(["ue4", "build-target", "UnrealLightmass", configuration])
 
 def build_project(mode, target, configuration, maps, out_dir):
     log_step(
@@ -82,7 +82,7 @@ def build_project(mode, target, configuration, maps, out_dir):
     fullArgs += [f'-archivedirectory="{out_dir}"']
 
     cmd = ["ue4", "uat"] + fullArgs
-    #cli(cmd)
+    cli(cmd)
 
 def create_mock_build(out_dir, mock_filename):
     mock_dir = os.path.join(out_dir, 'mock-build')

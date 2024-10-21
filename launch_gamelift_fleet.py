@@ -9,6 +9,7 @@ FLEET_TYPE = "SPOT"
 BUILD_SLEEP_TIME = 10
 CONCURRENT_EXECUTIONS = 3
 INSTANCE_TYPE = "c4.large"
+LAUNCH_PATH_ROOT = "C:\Game\\"
 RESULT_FILE_NAME = "result.json"
 OPERATING_SYSTEM = "WINDOWS_2016"
 GAME_SESSION_ACTIVATION_TIMEOUT = 600
@@ -56,7 +57,7 @@ def get_launch_path(build_path):
     files = os.listdir(build_path)
     exe_files = [file for file in files if file.endswith(".exe")]
     executable_name = os.path.splitext(exe_files[0])[0]
-    return f"{executable_name}.exe"
+    return f"{LAUNCH_PATH_ROOT}{executable_name}.exe"
 
 def upload_build(name, version, path, region):
     result = aws_cli(
@@ -114,7 +115,7 @@ def get_runtime_configuration(launch_path):
         {
             "ServerProcesses": [
                 {
-                    "LaunchPath": f"C:\Game\{launch_path}",
+                    "LaunchPath": launch_path,
                     "ConcurrentExecutions": CONCURRENT_EXECUTIONS,
                 }
             ],
