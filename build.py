@@ -2,6 +2,7 @@ import argparse
 import os
 import subprocess
 import shutil
+import sys
 
 U_PROJECT_PATH = os.path.join(os.getcwd(), "ClonkBR.uproject")
 BUILD_PARAMS = [
@@ -39,6 +40,8 @@ def main(pre_reqs, mode, target, configuration, maps):
 
     zip_dir = os.path.join(os.getcwd(), f"{mode}-zips")
     out_dir = os.path.join(os.getcwd(), f"{mode}-packaged")
+
+    cli(['exit 1'])
 
     create_directory(zip_dir)
     create_directory(out_dir)
@@ -117,7 +120,7 @@ def zip_path(source_dir, output_dir):
 def cli(args):
     try:
         log_step(f"Making the following CLI call: {' '.join(args)}")
-        return subprocess.run(args)
+        return subprocess.run(args, check=True)
     except:
         raise Exception("cli call failed")
 
