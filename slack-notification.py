@@ -2,10 +2,14 @@ import argparse
 import json
 import requests
 
-def slack_webhook(title, message, webhook, color, icon_emoji, channel, username):
+def slack_webhook(title, message, urls, webhook, color, icon_emoji, channel, username):
     headers = {
         "Content-Type": "application/json",
     }
+
+    if urls is not None:
+        message += process_urls(urls)
+
     response = requests.post(
         webhook,
         headers=headers,
@@ -40,6 +44,14 @@ def slack_notification_content(title, message, color, icon_emoji, channel, usern
         ]
     }
 
+def process_urls(urls):
+    urls_return = ''
+    for url in urls.split('\n'):
+        url_split = url.split('?')
+        urls_return += f"<{url}|{url_split[0]}>"
+    urls_return += '\n\n'
+    return urls_return
+
 def log_step(step):
     separator = "===================================================="
     print(separator)
@@ -53,6 +65,7 @@ def get_script_args():
     parser.add_argument("--message")
     parser.add_argument("--webhook")
     parser.add_argument("--channel")
+    parser.add_argument("--urls", default=None)
     parser.add_argument("--color", default="#9733EE")
     parser.add_argument("--icon-emoji", default=":bulb:")
     parser.add_argument("--username", default="Jenkins Build Notification Bot")
@@ -63,6 +76,7 @@ if __name__ == '__main__':
     slack_webhook(
         args.title,
         args.message,
+        args.urls,
         args.webhook,
         args.color,
         args.icon_emoji,
