@@ -3,13 +3,17 @@ import json
 import requests
 
 def slack_webhook(title, message, urls, webhook, color, icon_emoji, channel, username):
+    if urls is None:
+        send_slack_message(title, message, webhook, color, icon_emoji, channel, username)
+    else:
+        urls = process_urls(urls)
+        for url in urls:
+            send_slack_message(title, url, webhook, color, icon_emoji, channel, username)
+
+def send_slack_message(title, message, webhook, color, icon_emoji, channel, username):
     headers = {
         "Content-Type": "application/json",
     }
-
-    if urls is not None:
-        message = process_urls(urls)
-
     response = requests.post(
         webhook,
         headers=headers,
@@ -23,6 +27,7 @@ def slack_webhook(title, message, urls, webhook, color, icon_emoji, channel, use
         log_step("Slack Notification Sent.")
     else:
         log_step(f"Notification Failed, status code: {response.status_code}")
+
 
 def slack_notification_content(title, message, color, icon_emoji, channel, username):
     return {
@@ -45,11 +50,11 @@ def slack_notification_content(title, message, color, icon_emoji, channel, usern
     }
 
 def process_urls(urls):
-    urls_return = '\n\n'
+    urls_return = []
     for url in urls.split('\n'):
         url = url.strip()
         url_split = url.split('?')
-        urls_return += f"<{url}|{url_split[0]}>\n\n"
+        urls_return.append(f"<{url}|{url_split[0]}>")
     return urls_return
 
 def log_step(step):
