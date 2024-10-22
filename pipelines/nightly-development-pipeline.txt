@@ -98,23 +98,23 @@ pipeline {
             }
         }
 
-        stage('Override Ini Files') {
-            steps {
-                dir('project') {
-                    unstash('ini-override')
+        //stage('Override Ini Files') {
+        //    steps {
+        //        dir('project') {
+        //            unstash('ini-override')
 
-                    dir('temp') {
-                        unstash('engine-override')
-                    }
+        //            dir('temp') {
+        //                unstash('engine-override')
+        //            }
 
-                    powershell "python -u ini-override.py --engine-override-path='.\\temp\\${params.ENGINE_OVERRIDE_NAME}'"
+        //            powershell "python -u ini-override.py --engine-override-path='.\\temp\\${params.ENGINE_OVERRIDE_NAME}'"
 
-                    dir('temp') {
-                        deleteDir()
-                    }
-                }
-            }
-        }
+        //            dir('temp') {
+        //                deleteDir()
+        //            }
+        //        }
+        //    }
+        //}
 
         stage('Build Pre-Requisites') {
             steps {
