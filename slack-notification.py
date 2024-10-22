@@ -28,7 +28,6 @@ def send_slack_message(title, message, webhook, color, icon_emoji, channel, user
     else:
         log_step(f"Notification Failed, status code: {response.status_code}")
 
-
 def slack_notification_content(title, message, color, icon_emoji, channel, username):
     return {
         "channel": channel,
