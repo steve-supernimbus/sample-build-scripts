@@ -8,7 +8,7 @@ def slack_webhook(title, message, urls, webhook, color, icon_emoji, channel, use
     }
 
     if urls is not None:
-        message += process_urls(urls)
+        message = process_urls(urls)
 
     response = requests.post(
         webhook,
