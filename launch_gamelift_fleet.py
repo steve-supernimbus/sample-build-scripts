@@ -30,7 +30,7 @@ PORTS = [
 ]
 LOCATIONS = [
     {"Location": "eu-west-1"},
-    {"Location": "us-east-1"},
+    #{"Location": "us-east-1"},
 ]
 
 def main(build_name, build_version, build_path, fleet_name, aws_region):

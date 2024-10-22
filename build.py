@@ -2,7 +2,6 @@ import argparse
 import os
 import subprocess
 import shutil
-import sys
 
 U_PROJECT_PATH = os.path.join(os.getcwd(), "ClonkBR.uproject")
 BUILD_PARAMS = [
@@ -68,7 +67,10 @@ def build_project(mode, target, configuration, maps, out_dir):
     )
     fullArgs = BUILD_PARAMS
     fullArgs += [f'-project="{U_PROJECT_PATH}"']
-    fullArgs += [f"-map={maps}"]
+
+    if maps is not None:
+        fullArgs += [f"-map={maps}"]
+
     fullArgs += [f"-configuration={configuration}"]
 
     if mode == "client":
