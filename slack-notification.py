@@ -34,11 +34,11 @@ def slack_notification_content(title, message, color, icon_emoji, channel, usern
             {
                 "color": color,
                 "fields": [
-                    #{
-                    #    "title": title,
-                    #    "value": message,
-                    #    "short": "false",
-                    #},
+                    {
+                        "title": title,
+                        "value": message,
+                        "short": "false",
+                    },
                     {
                         "type": "mrkdwn",
                         "text": message,
