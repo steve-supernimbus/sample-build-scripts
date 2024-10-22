@@ -47,6 +47,7 @@ def slack_notification_content(title, message, color, icon_emoji, channel, usern
 def process_urls(urls):
     urls_return = '\n\n'
     for url in urls.split('\n'):
+        url = url.strip()
         url_split = url.split('?')
         urls_return += f"<{url}|{url_split[0]}>\n\n"
     return urls_return
