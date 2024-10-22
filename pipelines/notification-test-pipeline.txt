@@ -1,0 +1,98 @@
+pipeline {
+    parameters {
+        string(name: 'BUILD_SCRIPTS_REPO', defaultValue: 'https://github.com/steve-supernimbus/sample-build-scripts', description: 'Specify the Github build script repository.')
+        string(name: 'EMAIL_LIST', defaultValue: 'stephen@supernimbus.net', description: 'Specify emails of people who want to be notified of build results. Separate emails with a comma. Do not include whitespace')
+        string(name: 'EMAIL_REPLY_TO', defaultValue: 'stephen@supernimbus.net', description: 'Specify the reply-to email.')
+        string(name: 'SLACK_NOTIFICATION_WEBHOOK', defaultValue: 'todo', description: 'Specify a slack notification webhook.')
+    }
+
+    environment {
+        WORKSPACE = "jenkins-remote-${JOB_NAME}"
+    }
+
+    options {
+        disableConcurrentBuilds()
+        timestamps()
+    }
+
+    agent {
+        label 'windows-base-development'
+    }
+
+    stages {
+        stage('Set Build Name') {
+            steps {
+                echo 'STAGE - Set Build Name'
+                script {
+                    def currentDate = new Date().format("dd-MM-yyyy")
+                    currentBuild.displayName = "Notification_Test_${currentDate}_${env.BUILD_TAG}"
+                    env.BUILD_NAME = currentBuild.displayName
+                }
+                echo "Build will be called: ${env.BUILD_NAME}"
+            }
+        }
+
+        stage('Sync Build Scripts') {
+            steps {
+                echo 'STAGE - Sync Build Scripts'
+                dir('build-scripts') {
+                    git(
+                        url: "${params.BUILD_SCRIPTS_REPO}",
+                        branch: "main",
+                        changelog: true,
+                        poll: true
+                    )
+                    stash(name: 'build', includes: 'build.py')
+                    stash(name: 'upload', includes: 'upload.py')
+                    stash(name: 'read-write', includes: 'read-write.py')
+                    stash(name: 'ini-override', includes: 'ini-override.py')
+                }
+            }
+        }
+
+        stage('Get Upload URLs') {
+            steps {
+                dir('build-scripts') {
+                    script {
+                        env.BUILD_URLS = readFile('urls.txt').trim()
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Build completed: SUCCESS"
+            emailext(
+                attachLog: true,
+                body: """Successful - Jenkins Nightly Build - ${env.JOB_NAME}
+--------------------------------------------------------------------------------------
+${env.JOB_NAME} built successfully.
+
+Build URLs: ${env.BUILD_URLS}
+--------------------------------------------------------------------------------------
+""",
+                compressLog: true,
+                replyTo: "${params.EMAIL_REPLY_TO}",
+                subject: "Successful - Jenkins Nightly Build- ${env.JOB_NAME}",
+                to: "${params.EMAIL_LIST}"
+            )
+        }
+        failure {
+            echo "Build completed: FAILURE"
+            emailext(
+                attachLog: true,
+                body: """Failure - Jenkins Nightly Build- ${env.JOB_NAME}
+--------------------------------------------------------------------------------------
+${env.JOB_NAME} built with errors.
+--------------------------------------------------------------------------------------
+""",
+                compressLog: true,
+                replyTo: "${params.EMAIL_REPLY_TO}",
+                subject: "Failure - Jenkins Nightly Build - ${env.JOB_NAME}",
+                to: "${params.EMAIL_LIST}"
+            )
+        }
+    }
+}
