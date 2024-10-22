@@ -46,6 +46,7 @@ pipeline {
                     stash(name: 'upload', includes: 'upload.py')
                     stash(name: 'read-write', includes: 'read-write.py')
                     stash(name: 'ini-override', includes: 'ini-override.py')
+                    stash(name: 'slack-notification', includes: 'slack-notification.py')
                 }
             }
         }
