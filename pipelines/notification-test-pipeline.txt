@@ -78,6 +78,8 @@ Build URLs: ${env.BUILD_URLS}
                 subject: "Successful - Jenkins Nightly Build- ${env.JOB_NAME}",
                 to: "${params.EMAIL_LIST}"
             )
+            unstash 'slack-notification'
+            powershell "python -u slack-notification.py --title='Test Success Notification' --message='I am a test' --webhook='${env.SLACK_NOTIFICATION_WEBHOOK}'"
         }
         failure {
             echo "Build completed: FAILURE"
@@ -93,6 +95,8 @@ ${env.JOB_NAME} built with errors.
                 subject: "Failure - Jenkins Nightly Build - ${env.JOB_NAME}",
                 to: "${params.EMAIL_LIST}"
             )
+            unstash 'slack-notification'
+            powershell "python -u slack-notification.py --title='Test Failure Notification' --message='I am a test' --webhook='${env.SLACK_NOTIFICATION_WEBHOOK}'"
         }
     }
 }
