@@ -36,8 +36,6 @@ def slack_notification_content(title, message, color, icon_emoji, channel, usern
                 "fields": [
                     {
                         "title": title,
-                        "value": message,
-                        "short": "false",
                     },
                     {
                         "type": "mrkdwn",
