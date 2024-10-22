@@ -48,7 +48,7 @@ def process_urls(urls):
     urls_return = '\n\n'
     for url in urls.split('\n'):
         url_split = url.split('?')
-        urls_return += f"<{url}|{url_split[0]}>"
+        urls_return += f"<{url}|{url_split[0]}>\n"
     return urls_return
 
 def log_step(step):
