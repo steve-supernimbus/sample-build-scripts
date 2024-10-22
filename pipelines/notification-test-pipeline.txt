@@ -2,7 +2,7 @@ pipeline {
     parameters {
         string(name: 'BUILD_SCRIPTS_REPO', defaultValue: 'https://github.com/steve-supernimbus/sample-build-scripts', description: 'Specify the Github build script repository.')
         string(name: 'EMAIL_LIST', defaultValue: 'stephen@supernimbus.net', description: 'Specify emails of people who want to be notified of build results. Separate emails with a comma. Do not include whitespace')
-        string(name: 'EMAIL_REPLY_TO', defaultValue: 'stephen@supernimbus.net', description: 'Specify the reply-to email.')
+        string(name: 'EMAIL_REPLY_TO', defaultValue: 'brian@bearhammergames.com', description: 'Specify the reply-to email.')
         string(name: 'SLACK_NOTIFICATION_WEBHOOK', defaultValue: 'todo', description: 'Specify a slack notification webhook.')
     }
 
@@ -80,7 +80,7 @@ Build URLs: ${env.BUILD_URLS}
                 to: "${params.EMAIL_LIST}"
             )
             unstash 'slack-notification'
-            powershell "python -u slack-notification.py --title='Test Success Notification' --message='I am a test' --webhook='${env.SLACK_NOTIFICATION_WEBHOOK}'"
+            powershell "python -u slack-notification.py --title='${env.JOB_NAME} Built Successfully' --urls='${env.BUILD_URLS}' --webhook='${env.SLACK_NOTIFICATION_WEBHOOK}' --color='#00FF00'"
         }
         failure {
             echo "Build completed: FAILURE"
@@ -97,7 +97,7 @@ ${env.JOB_NAME} built with errors.
                 to: "${params.EMAIL_LIST}"
             )
             unstash 'slack-notification'
-            powershell "python -u slack-notification.py --title='Test Failure Notification' --message='I am a test' --webhook='${env.SLACK_NOTIFICATION_WEBHOOK}'"
+            powershell "python -u slack-notification.py --title='${env.JOB_NAME} failed to Build' --message='${env.JOB_NAME} failed to Build' --webhook='${env.SLACK_NOTIFICATION_WEBHOOK}' --color='#FF0000'"
         }
     }
 }

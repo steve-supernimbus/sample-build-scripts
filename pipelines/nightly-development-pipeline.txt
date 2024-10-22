@@ -58,6 +58,7 @@ pipeline {
                     stash(name: 'upload', includes: 'upload.py')
                     stash(name: 'read-write', includes: 'read-write.py')
                     stash(name: 'ini-override', includes: 'ini-override.py')
+                    stash(name: 'slack-notification', includes: 'slack-notification.py')
                     dir('configs/ini-files/engine') {
                         stash(name: 'engine-override', includes: "${params.ENGINE_OVERRIDE_NAME}")
                     }
@@ -199,6 +200,8 @@ Build URLs: ${env.BUILD_URLS}
                 subject: "Successful - Jenkins Nightly Build- ${env.JOB_NAME}",
                 to: "${params.EMAIL_LIST}"
             )
+            unstash 'slack-notification'
+            powershell "python -u slack-notification.py --title='${env.JOB_NAME} Built Successfully' --urls='${env.BUILD_URLS}' --webhook='${env.SLACK_NOTIFICATION_WEBHOOK}' --color='#00FF00'"
         }
         failure {
             echo "Build completed: FAILURE"
@@ -214,6 +217,8 @@ ${env.JOB_NAME} built with errors.
                 subject: "Failure - Jenkins Nightly Build - ${env.JOB_NAME}",
                 to: "${params.EMAIL_LIST}"
             )
+            unstash 'slack-notification'
+            powershell "python -u slack-notification.py --title='${env.JOB_NAME} failed to Build' --message='${env.JOB_NAME} failed to Build' --webhook='${env.SLACK_NOTIFICATION_WEBHOOK}' --color='#FF0000'"
         }
     }
 }
