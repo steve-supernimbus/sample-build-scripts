@@ -41,8 +41,6 @@ def main(pre_reqs, mode, target, configuration, maps):
     zip_dir = os.path.join(os.getcwd(), f"{mode}-zips")
     out_dir = os.path.join(os.getcwd(), f"{mode}-packaged")
 
-    cli(['exit 1'])
-
     create_directory(zip_dir)
     create_directory(out_dir)
 
