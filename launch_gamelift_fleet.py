@@ -10,6 +10,7 @@ BUILD_SLEEP_TIME = 10
 PROJECT_NAME = "ClonkBR"
 CONCURRENT_EXECUTIONS = 3
 INSTANCE_TYPE = "c4.large"
+SERVER_SDK_VERSION = "5.1.2"
 LAUNCH_PATH_ROOT = "C:\\game\\"
 RESULT_FILE_NAME = "result.json"
 OPERATING_SYSTEM = "WINDOWS_2016"
@@ -69,6 +70,7 @@ def upload_build(name, version, path, region):
             "--build-root", path,
             "--build-version", version,
             "--operating-system", OPERATING_SYSTEM,
+            "--server-sdk-version", SERVER_SDK_VERSION,
         ]
     )
     return extract_build_id(result)
