@@ -49,9 +49,6 @@ pipeline {
                     stash(name: 'ini-override', includes: 'ini-override.py')
                     stash(name: 'launch-gamelift', includes: 'launch_gamelift_fleet.py')
                     stash(name: 'slack-notification', includes: 'slack-notification.py')
-                    dir('configs/ini-files/engine') {
-                        stash(name: 'engine-override', includes: "${params.ENGINE_OVERRIDE_NAME}")
-                    }
                     dir('gamelift-files') {
                         stash(name: 'gl_install', includes: 'install.bat')
                         stash(name: 'gl_redist', includes: 'VC_redist.x64.exe')
