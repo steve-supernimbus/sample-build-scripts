@@ -55,7 +55,9 @@ def main(build_name, build_version, build_path, fleet_name, aws_region):
     )
 
 def get_launch_path(build_path):
-    files = os.listdir(build_path)
+    launch_path_start = f"{PROJECT_NAME}\Binaries\Win64"
+    exe_path = os.path.join(build_path, launch_path_start)
+    files = os.listdir(exe_path)
     exe_files = [file for file in files if file.endswith(".exe")]
     executable_name = os.path.splitext(exe_files[0])[0]
     return f"{LAUNCH_PATH_ROOT}{executable_name}.exe"
