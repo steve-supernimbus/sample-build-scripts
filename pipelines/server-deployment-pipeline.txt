@@ -26,7 +26,7 @@ pipeline {
                 echo 'STAGE - Set Build Name'
                 script {
                     def currentDate = new Date().format("dd-MM-yyyy")
-                    currentBuild.displayName = "Nightly_${currentDate}_${env.BUILD_TAG}"
+                    currentBuild.displayName = "Server_Deployment_${currentDate}_${env.BUILD_TAG}"
                     env.BUILD_NAME = currentBuild.displayName
                 }
                 echo "Build will be called: ${env.BUILD_NAME}"
