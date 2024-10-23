@@ -28,7 +28,7 @@ pipeline {
     }
 
     agent {
-        label 'windows-base-development'
+        label 'windows-nightly'
     }
 
     stages {

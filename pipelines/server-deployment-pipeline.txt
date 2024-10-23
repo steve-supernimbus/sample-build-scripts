@@ -17,7 +17,7 @@ pipeline {
     }
 
     agent {
-        label 'windows-base-development'
+        label 'windows-server-development'
     }
 
     stages {
