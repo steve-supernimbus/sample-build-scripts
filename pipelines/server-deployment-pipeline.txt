@@ -52,6 +52,10 @@ pipeline {
                     dir('configs/ini-files/engine') {
                         stash(name: 'engine-override', includes: "${params.ENGINE_OVERRIDE_NAME}")
                     }
+                    dir('gamelift-files') {
+                        stash(name: 'gl_install', includes: 'install.bat')
+                        stash(name: 'gl_redist', includes: 'VC_redist.x64.exe')
+                    }
                 }
             }
         }
@@ -122,6 +126,15 @@ pipeline {
                 dir('project') {
                     unstash 'build'
                     powershell "python -u build.py --mode server --maps=${params.MAPS}"
+                }
+            }
+        }
+
+        stage('Include GameLift Files') {
+            steps {
+                dir('project\\Packaged\\WindowsServer') {
+                    unstash 'gl_install'
+                    unstash 'gl_redist'
                 }
             }
         }
