@@ -14,10 +14,10 @@ def main(alias_id, fleet_id):
             log_step("Update GameLift Alias timeout.")
             sys.exit(2)
 
-        log_step(f"Sleeping for {MONITORING_INTERVAL} seconds.")
-        time.sleep(MONITORING_INTERVAL)
         total_time += MONITORING_INTERVAL
+        log_step(f"Sleeping for {MONITORING_INTERVAL} seconds.")
         log_step(f"{TIMEOUT - total_time} seconds until timeout.")
+        time.sleep(MONITORING_INTERVAL)
 
     #update_gamelift_alias(alias_id, fleet_id)
 
@@ -30,10 +30,11 @@ def fleet_ready_or_failed(fleet_id):
         ]
     )
 
-    attributes = result["LocationAttributes"]
+    result_json = json.loads(result.strip())
+    attributes = result_json["LocationAttributes"]
 
-    error_in_region = False
     active_regions = 0
+    error_in_region = False
     total_regions = len(attributes)
 
     for attribute in attributes:
