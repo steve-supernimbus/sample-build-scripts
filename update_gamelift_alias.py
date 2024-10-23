@@ -19,7 +19,7 @@ def main(alias_id, fleet_id):
         total_time += MONITORING_INTERVAL
         log_step(f"{TIMEOUT - total_time} seconds until timeout.")
 
-    update_gamelift_alias(alias_id, fleet_id)
+    #update_gamelift_alias(alias_id, fleet_id)
 
 def fleet_ready_or_failed(fleet_id):
     result = aws_cli(
@@ -55,14 +55,16 @@ def fleet_ready_or_failed(fleet_id):
     return active_regions == total_regions
 
 def update_gamelift_alias(alias_id, fleet_id):
-    routing_strategy = json.dumps({"Type": "SIMPLE", "FleetId": fleet_id})
-
+    routing_strategy = {
+        "Type": "SIMPLE",
+        "FleetId": fleet_id
+    }
     result = aws_cli(
         [
             "gamelift",
             "update-alias",
             "--alias-id", alias_id,
-            "--routing-strategy", routing_strategy,
+            "--routing-strategy", json.dumps(routing_strategy),
         ]
     )
     log_step(result)
@@ -80,9 +82,9 @@ def aws_cli(args):
     try:
         return subprocess.run(
             aws_call,
-            capture_output = True,
             text = True,
             check = True,
+            capture_output = True,
         ).stdout
     except:
         raise Exception("Aws command failed")
