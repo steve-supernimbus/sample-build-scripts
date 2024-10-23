@@ -76,7 +76,13 @@ def upload_build(name, version, path, region):
     return extract_build_id(result)
 
 def build_ready_or_failed(build_id):
-    result = aws_cli(["gamelift", "describe-build", "--build-id", build_id])
+    result = aws_cli(
+        [
+            "gamelift",
+            "describe-build",
+            "--build-id", build_id
+        ]
+    )
     json_result = json.loads(result)
     status = json_result["Build"]["Status"]
 
