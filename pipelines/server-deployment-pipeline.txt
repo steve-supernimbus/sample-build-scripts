@@ -1,6 +1,5 @@
 pipeline {
     parameters {
-        string(name: 'ENGINE_OVERRIDE_NAME', defaultValue: 'MultiplayerEngine.ini', description: 'Specify the engine override name')
         string(name: 'DEPOT_SOURCE', defaultValue: '//depot/ClonkBR/...', description: 'Specify the Perforce depot source.')
         string(name: 'BUILD_SCRIPTS_REPO', defaultValue: 'https://github.com/steve-supernimbus/sample-build-scripts', description: 'Specify the Github build script repository.')
         string(name: 'PROJECT_WS', defaultValue: 'GameLiftTutorial-Incremental', description: 'Specify the projects workspace')
@@ -48,6 +47,7 @@ pipeline {
                     stash(name: 'upload', includes: 'upload.py')
                     stash(name: 'read-write', includes: 'read-write.py')
                     stash(name: 'ini-override', includes: 'ini-override.py')
+                    stash(name: 'launch-gamelift', includes: 'launch_gamelift_fleet.py')
                     stash(name: 'slack-notification', includes: 'slack-notification.py')
                     dir('configs/ini-files/engine') {
                         stash(name: 'engine-override', includes: "${params.ENGINE_OVERRIDE_NAME}")
@@ -93,24 +93,6 @@ pipeline {
             }
         }
 
-        //stage('Override Ini Files') {
-        //    steps {
-        //        dir('project') {
-        //            unstash('ini-override')
-
-        //            dir('temp') {
-        //                unstash('engine-override')
-        //            }
-
-        //            powershell "python -u ini-override.py --engine-override-path='.\\temp\\${params.ENGINE_OVERRIDE_NAME}'"
-
-        //            dir('temp') {
-        //                deleteDir()
-        //            }
-        //        }
-        //    }
-        //}
-
         stage('Build Pre-Requisites') {
             steps {
                 echo 'STAGE - Build Pre-Requisites'
@@ -132,9 +114,18 @@ pipeline {
 
         stage('Include GameLift Files') {
             steps {
-                dir('project\\Packaged\\WindowsServer') {
+                dir('project\\server-packaged\\WindowsServer') {
                     unstash 'gl_install'
                     unstash 'gl_redist'
+                }
+            }
+        }
+
+        stage('Launch GameLift Fleet') {
+            steps {
+                dir('project\\server-packaged') {
+                    unstash 'launch-gamelift'
+                    powershell "python -u launch_gamelift_fleet.py --build-name='clonk-test-build' --fleet-name='clonk-test-fleet' --build-version='0.0.1' --aws-region='eu-west-1' --build-path='.\\WindowsServer'"
                 }
             }
         }
