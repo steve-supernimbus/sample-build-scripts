@@ -1,10 +1,15 @@
+import base64
 import argparse
 import json
 import requests
 
-def slack_webhook(title, message, urls, webhook, color, icon_emoji, channel, username):
+def slack_webhook(title, message, urls, base64_message, webhook, color, icon_emoji, channel, username):
     if urls is None:
-        send_slack_message(title, message, webhook, color, icon_emoji, channel, username)
+        if base64_message is None:
+            send_slack_message(title, message, webhook, color, icon_emoji, channel, username)
+        else:
+            decoded_message = base64.b64decode(base64_message).decode('utf-8')
+            send_slack_message(title, decoded_message, webhook, color, icon_emoji, channel, username)
     else:
         urls = process_urls(urls)
         for url in urls:
@@ -69,6 +74,7 @@ def get_script_args():
     parser.add_argument("--message")
     parser.add_argument("--webhook")
     parser.add_argument("--channel")
+    parser.add_argument("--base64-message")
     parser.add_argument("--urls", default=None)
     parser.add_argument("--color", default="#9733EE")
     parser.add_argument("--icon-emoji", default=":bulb:")
@@ -81,6 +87,7 @@ if __name__ == '__main__':
         args.title,
         args.message,
         args.urls,
+        args.base64_message,
         args.webhook,
         args.color,
         args.icon_emoji,

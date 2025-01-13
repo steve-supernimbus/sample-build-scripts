@@ -5,7 +5,7 @@ import subprocess
 
 URLS_FILE_PATH = os.path.join(os.getcwd(), 'urls.txt')
 
-def main(bucket, local_path, remote_path, clean):
+def main(bucket, local_path, remote_path, accelerate, clean):
     if clean:
         clear_file(URLS_FILE_PATH)
         return
@@ -13,12 +13,12 @@ def main(bucket, local_path, remote_path, clean):
     log_step("Begin Upload.")
     local_path = os.path.join(os.getcwd(), local_path)
     log_step(f"Uploading contents from {local_path}")
-    urls = sync_folder(bucket, local_path, remote_path)
+    urls = sync_folder(bucket, local_path, remote_path, accelerate)
     log_step(f"Presigned URLs: {urls}")
     append_file(URLS_FILE_PATH, urls)
     log_step("Finish Uploading.")
 
-def sync_folder(bucket, local_path, remote_path):
+def sync_folder(bucket, local_path, remote_path, accelerate):
     urls = []
     timestamp = get_timestamp()
     for dirpath, dir_names, file_names in os.walk(local_path):
@@ -27,7 +27,7 @@ def sync_folder(bucket, local_path, remote_path):
             remote_file_name = file_name.replace(" ", "-")
             remote_path = get_remote_path(bucket, remote_path, timestamp, remote_file_name)
             upload_file_to_s3(local_path, remote_path)
-            urls.append(generate_presigned_url(remote_path).strip())
+            urls.append(generate_presigned_url(remote_path, accelerate).strip())
     return urls
 
 def upload_file_to_s3(local_path, remote_path):
@@ -43,16 +43,20 @@ def upload_file_to_s3(local_path, remote_path):
         ]
     )
 
-def generate_presigned_url(remote_path):
+def generate_presigned_url(remote_path, accelerate):
     log_step(f"Generating pre-signed url for {remote_path}")
-    return aws_cli(
-        [
-            "s3",
-            "presign",
-            remote_path,
-            "--expires-in=604800"
+    cmd = [
+        "s3",
+        "presign",
+        remote_path,
+        "--expires-in=604800",
+    ]
+    if accelerate:
+        cmd += [
+            "--endpoint-url=https://s3-accelerate.amazonaws.com",
+            "--region=eu-west-1",
         ]
-    )
+    return aws_cli(cmd)
 
 def aws_cli(args):
     aws_call = ["aws"] + args
@@ -101,9 +105,10 @@ def get_script_args():
     parser.add_argument("--bucket")
     parser.add_argument("--local-directory")
     parser.add_argument("--remote-directory")
+    parser.add_argument("--accelerate", type=lambda x: x.lower() == 'true', default=False)
     parser.add_argument("--clean", default=False)
     return parser.parse_args()
 
 if __name__ == "__main__":
     args = get_script_args()
-    main(args.bucket, args.local_directory, args.remote_directory, args.clean)
+    main(args.bucket, args.local_directory, args.remote_directory, args.accelerate, args.clean)

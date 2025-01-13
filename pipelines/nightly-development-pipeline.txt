@@ -1,15 +1,6 @@
 pipeline {
     parameters {
-        string(name: 'ENGINE_OVERRIDE_NAME', defaultValue: 'MultiplayerEngine.ini', description: 'Specify the engine override name')
-        string(name: 'DEPOT_SOURCE', defaultValue: '//depot/ClonkBR/...', description: 'Specify the Perforce depot source.')
-        string(name: 'BUILD_SCRIPTS_REPO', defaultValue: 'https://github.com/steve-supernimbus/sample-build-scripts', description: 'Specify the Github build script repository.')
-        string(name: 'PROJECT_WS', defaultValue: 'GameLiftTutorial-Incremental', description: 'Specify the projects workspace')
-        string(name: 'EMAIL_LIST', defaultValue: 'brian@bearhammergames.com,stephen@supernimbus.net', description: 'Specify emails of people who want to be notified of build results. Separate emails with a comma. Do not include whitespace')
-        string(name: 'EMAIL_REPLY_TO', defaultValue: 'brian@bearhammergames.com', description: 'Specify the reply-to email.')
-        string(name: 'MAPS', defaultValue: '/Game/Clonk/Maps/TestLevels/TestLevel_HubMap_Mobile+/Game/Clonk/Maps/TestLevels/LVL_ClayYeetsShowcase', description: 'Specify the Maps.')
-        string(name: 'SLACK_NOTIFICATION_WEBHOOK', defaultValue: 'todo', description: 'Specify a slack notification webhook.')
-        string(name: 'CLIENT_S3_BUCKET', defaultValue: 'clonk-client-development', description: 'Specify the client S3 Bucket.')
-        string(name: 'SERVER_S3_BUCKET', defaultValue: 'clonk-server-development', description: 'Specify the server S3 Bucket.')
+        string(name: 'EMAIL_LIST', defaultValue: '', description: 'Specify emails of people who want to be notified of build results. Separate emails with a comma. Do not include whitespace')
     }
 
     triggers {
@@ -17,8 +8,17 @@ pipeline {
     }
 
     environment {
+        EMAIL_REPLY_TO = ''
+
+        GAME_DEPOT_SOURCE = '//depot/...'
+        BUILDER_SCRIPTS_DEPOT_SOURCE = '//depot/BuildScripts/...'
+        SERVER_REQUIRED_FILES_DEPOT_SOURCE = '//depot/WindowsServerRequiredFiles/...'
+
         REMOTE_S3_DIRECTORY = 'nightly-builds'
-        WORKSPACE = "jenkins-remote-${JOB_NAME}"
+        CLIENT_S3_BUCKET = 'test-client-development'
+        SERVER_S3_BUCKET = 'test-server-development'
+
+        SLACK_NOTIFICATION_WEBHOOK = 'https://hooks.slack.com/services/...'
     }
 
     options {
@@ -59,9 +59,6 @@ pipeline {
                     stash(name: 'read-write', includes: 'read-write.py')
                     stash(name: 'ini-override', includes: 'ini-override.py')
                     stash(name: 'slack-notification', includes: 'slack-notification.py')
-                    dir('configs/ini-files/engine') {
-                        stash(name: 'engine-override', includes: "${params.ENGINE_OVERRIDE_NAME}")
-                    }
                 }
             }
         }
@@ -73,7 +70,7 @@ pipeline {
                     p4sync(
                         charset: 'none',
                         credential: 'p4-creds',
-                        format: "${params.PROJECT_WS}",
+                        format: "${env.BUILD_NAME}",
                         populate: autoClean(
                             delete: true,
                             modtime: false,
@@ -99,24 +96,6 @@ pipeline {
             }
         }
 
-        //stage('Override Ini Files') {
-        //    steps {
-        //        dir('project') {
-        //            unstash('ini-override')
-
-        //            dir('temp') {
-        //                unstash('engine-override')
-        //            }
-
-        //            powershell "python -u ini-override.py --engine-override-path='.\\temp\\${params.ENGINE_OVERRIDE_NAME}'"
-
-        //            dir('temp') {
-        //                deleteDir()
-        //            }
-        //        }
-        //    }
-        //}
-
         stage('Build Pre-Requisites') {
             steps {
                 echo 'STAGE - Build Pre-Requisites'
@@ -131,7 +110,7 @@ pipeline {
             steps {
                 dir('project') {
                     unstash 'upload'
-                    powershell "python -u upload.py --clean=True"
+                    powershell "python -u upload.py --clean True"
                 }
             }
         }
@@ -140,7 +119,7 @@ pipeline {
             steps {
                 dir('project') {
                     unstash 'build'
-                    powershell "python -u build.py --mode client --maps=${params.MAPS}"
+                    powershell "python -u build.py --mode client"
                 }
             }
         }
@@ -158,7 +137,7 @@ pipeline {
             steps {
                 dir('project') {
                     unstash 'build'
-                    powershell "python -u build.py --mode server --maps=${params.MAPS}"
+                    powershell "python -u build.py --mode server"
                 }
             }
         }
@@ -197,11 +176,11 @@ Build URLs: ${env.BUILD_URLS}
 """,
                 compressLog: true,
                 replyTo: "${params.EMAIL_REPLY_TO}",
-                subject: "Successful - Jenkins Nightly Build- ${env.JOB_NAME}",
+                subject: "Successful - Jenkins Nightly Build - ${env.JOB_NAME}",
                 to: "${params.EMAIL_LIST}"
             )
             unstash 'slack-notification'
-            powershell "python -u slack-notification.py --title='${env.JOB_NAME} Built Successfully' --urls='${env.BUILD_URLS}' --webhook='${env.SLACK_NOTIFICATION_WEBHOOK}' --color='#00FF00'"
+            powershell "python -u slack-notification.py --title='${env.JOB_NAME}' --urls='${env.BUILD_URLS}' --webhook='${env.SLACK_NOTIFICATION_WEBHOOK}' --color='#00FF00'"
         }
         failure {
             echo "Build completed: FAILURE"

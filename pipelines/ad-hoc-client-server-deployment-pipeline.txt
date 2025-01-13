@@ -1,0 +1,321 @@
+def encodedMessage
+def getChangeSetDetails() {
+    if (currentBuild.changeSets.isEmpty()) {
+        return "No changes detected in this build."
+    }
+    def changes = "Changes detected in this build:\n\n"
+    currentBuild.changeSets.each { changeSet ->
+        changeSet.items.each { item ->
+            changes += """
+Commit: ${item.commitId}
+Author: ${item.author.fullName}
+Date: ${new Date(item.timestamp)}
+Message: ${item.msg}
+--------------------
+"""
+        }
+    }
+    return changes
+}
+
+pipeline {
+    parameters {
+        string(name: 'CLIENT_PRE_REQS', defaultValue: 'False', description: 'If the client build pre-reqs should be run.')
+        string(name: 'CLIENT_TARGET', defaultValue: 'Win64', description: 'The target of the build.')
+        string(name: 'CLIENT_COOKFLAVOR', defaultValue: 'ASTC', description: 'The cookflavor of the build.')
+        string(name: 'CLIENT_CONFIGURATION', defaultValue: 'Development', description: 'The configuration of the build.')
+        string(name: 'CLIENT_S3_BUCKET', defaultValue: 'test-client-development', description: 'S3 Bucket to upload to.')
+        string(name: 'CLIENT_S3_DIRECTORY', defaultValue: 'nightly-builds', description: 'S3 directory to upload to.')
+        booleanParam(name: 'CLIENT_S3_ACCELERATE', defaultValue: false, description: 'Add S3 Acceleration')
+        string(name: 'SERVER_PRE_REQS', defaultValue: 'False', description: 'If the client build pre-reqs should be run.')
+        string(name: 'SERVER_TARGET', defaultValue: 'Win64', description: 'The target of the build.')
+        string(name: 'SERVER_COOKFLAVOR', defaultValue: 'ASTC', description: 'The cookflavor of the build.')
+        string(name: 'SERVER_CONFIGURATION', defaultValue: 'Development', description: 'The configuration of the build.')
+        string(name: 'SERVER_S3_BUCKET', defaultValue: 'test-server-development', description: 'S3 Bucket to upload to.')
+        string(name: 'SERVER_S3_DIRECTORY', defaultValue: 'nightly-builds', description: 'S3 directory to upload to.')
+        string(name: 'BUILD_NAME', defaultValue: 'test-build', description: 'Specify the GameLift Build Name.')
+        string(name: 'FLEET_NAME', defaultValue: 'test-fleet', description: 'Specify the GameLift Fleet Name.')
+        string(name: 'BUILD_VERSION', defaultValue: '0.0.1', description: 'Specify the GameLift Build Version.')
+        string(name: 'AWS_REGION', defaultValue: 'eu-west-1', description: 'Specify the AWS region.')
+        string(name: 'ALIAS_ID', defaultValue: 'alias-test', description: 'Specify the Alias ID to update.')
+        string(name: 'ENVIRONMENT', defaultValue: 'development', description: 'Specify the GameLift environment, development builds will be automatically cleaned up.')
+    }
+
+    environment {
+        SLACK_NOTIFICATION_WEBHOOK = 'https://hooks.slack.com/services/...'
+    }
+
+    options {
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        disableConcurrentBuilds()
+        timestamps()
+    }
+
+    agent {
+        label 'ad-hoc-client-server-deployment'
+    }
+
+    stages {
+        stage('Set Build Name') {
+            steps {
+                echo 'STAGE - Set Build Name'
+                script {
+                    def currentDate = new Date().format("dd-MM-yyyy")
+                    currentBuild.displayName = "Ad_Hoc_${currentDate}_${env.BUILD_TAG}"
+                    env.BUILD_NAME = currentBuild.displayName
+                }
+                echo "Build will be called: ${env.BUILD_NAME}"
+            }
+        }
+
+        stage('Sync Project Files') {
+            steps {
+                echo 'STAGE - Sync Project Files'
+                dir('project') {
+                    script {
+                        def ws = [
+                            $class: 'ManualWorkspaceImpl',
+                            charset: 'none',
+                            name: 'jenkins',
+                            spec: [
+                                clientSpec(
+                                    name: 'jenkins',
+                                    rootPath: 'd:\\jenkins\\workspace\\Ad Hoc Client Server Deployment\\project',
+                                    view: '//depot/... //jenkins/...',
+                                )
+                            ]
+                        ]
+                        
+                        p4sync(
+                            charset: 'none',
+                            credential: 'p4-creds',
+                            format: 'jenkins',
+                            populate: autoClean(
+                                delete: true,
+                                modtime: false,
+                                parallel: [enable: false, minbytes: '1024', minfiles: '1', threads: '4'],
+                                pin: '',
+                                quiet: true,
+                                replace: true,
+                                tidy: false
+                            ),
+                            source: depotSource("//depot/...")
+                        )
+    
+                        def p4 = p4(
+                            credential: 'p4-creds',
+                            workspace: manualSpec(
+                                name: 'jenkins',
+                                spec: clientSpec(
+                                    name: 'jenkins',
+                                    rootPath: 'd:\\jenkins\\workspace\\Ad Hoc Client Server Deployment\\project',
+                                    view: '//depot/... //jenkins/...'
+                                )
+                            )
+                        )
+                        
+                        def changes = p4.run("changes", "-m1", "#have")
+                        env.CHANGE_ID = changes[0].change
+                    }
+                }
+
+                echo 'Stash Windows Server Required Files'
+                dir('project\\WindowsServerRequiredFiles') {
+                    stash(name: 'install', includes: 'install.bat')
+                    stash(name: 'libssl', includes: 'libssl-3-x64.dll')
+                    stash(name: 'vcredist', includes: 'vc_redist.x64.exe')
+                    stash(name: 'libcrypto', includes: 'libcrypto-3-x64.dll')
+                    stash(name: 'UEPrereqSetup', includes: 'UEPrereqSetup_x64.exe')
+                }
+
+                echo 'Stash Build Scripts'
+                dir('project\\BuildScripts') {
+                    stash(name: 'build', includes: 'build.py')
+                    stash(name: 'upload', includes: 'upload.py')
+                    stash(name: 'compress', includes: 'compress.py')
+                    stash(name: 'read-write', includes: 'read-write.py')
+                    stash(name: 'create-config', includes: 'create-config.py')
+                    stash(name: 'slack-notification', includes: 'slack-notification.py')
+                    stash(name: 'launch-gamelift-fleet', includes: 'launch-gamelift-fleet.py')
+                    stash(name: 'update-gamelift-alias', includes: 'update-gamelift-alias.py')
+                    stash(name: 'delete-gamelift-fleets', includes: 'delete-gamelift-fleets.py')
+                }
+            }
+        }
+
+        stage('Make Project Read/Writable') {
+            steps {
+                echo 'STAGE - Make Project Read/Writable'
+                dir('project') {
+                    unstash 'read-write'
+                    powershell "python -u read-write.py"
+                }
+            }
+        }
+
+        stage('Clean Urls file') {
+            steps {
+                echo 'STAGE - Clean Urls file'
+                dir('project\\ClonkBR') {
+                    unstash 'upload'
+                    powershell "python -u upload.py --clean True"
+                }
+            }
+        }
+
+        stage('Build Client Project') {
+            steps {
+                echo 'STAGE - Build Client Project'
+                dir('project\\ClonkBR') {
+                    unstash 'build'
+                    powershell "python -u build.py --pre-reqs=${params.CLIENT_PRE_REQS} --mode=client --target=${params.CLIENT_TARGET} --cookflavor=${params.CLIENT_COOKFLAVOR} --configuration=${params.CLIENT_CONFIGURATION}"
+                }
+            }
+        }
+
+        stage('Add Client Configs') {
+            steps {
+                echo 'STAGE - Add Client Configs'
+                dir('project\\ClonkBR') {
+                    unstash 'create-config'
+                    powershell "python -u create-config.py --source=client-build --commit-id='${env.CHANGE_ID}'"
+                }
+            }
+        }
+
+        stage('Compress Client Build') {
+            steps {
+                echo 'STAGE - Compress Client Build'
+                dir('project\\ClonkBR') {
+                    unstash 'compress'
+                    powershell "python -u compress.py --source=client-build --target=client-zips --build-id='${env.CHANGE_ID}'"
+                }
+            }
+        }
+
+        stage('Upload Client Build') {
+            steps {
+                echo 'STAGE - Upload Client Build'
+                dir('project\\ClonkBR') {
+                    unstash 'upload'
+                    powershell "python -u upload.py --bucket='${params.CLIENT_S3_BUCKET}' --local-directory='client-zips' --remote-directory='${params.CLIENT_S3_DIRECTORY}' --accelerate=${params.CLIENT_S3_ACCELERATE}"
+                }
+            }
+        }
+
+        stage('Build Server') {
+            steps {
+                echo 'STAGE - Build Server'
+                dir('project\\ClonkBR') {
+                    unstash 'build'
+                    powershell "python -u build.py --pre-reqs=${params.SERVER_PRE_REQS} --mode server --target ${params.SERVER_TARGET} --cookflavor=${params.SERVER_COOKFLAVOR} --configuration=${params.SERVER_CONFIGURATION}"
+                }
+            }
+        }
+
+        stage('Add Server Configs') {
+            steps {
+                echo 'STAGE - Add Server Configs'
+                dir('project\\ClonkBR') {
+                    unstash 'create-config'
+                    powershell "python -u create-config.py --source=server-build --commit-id='${env.CHANGE_ID}'"
+                }
+            }
+        }
+
+        stage('Include GameLift Files') {
+            steps {
+                echo 'STAGE - Include GameLift Files'
+                dir('project\\ClonkBR\\server-build\\WindowsServer') {
+                    unstash 'install'
+                    unstash 'vcredist'
+                    unstash 'UEPrereqSetup'    
+                }
+                dir('project\\ClonkBR\\server-build\\WindowsServer\\ClonkBR\\Binaries\\Win64') {
+                    unstash 'libssl'
+                    unstash 'libcrypto'
+                }
+            }
+        }
+
+        stage('Compress Server Build') {
+            steps {
+                echo 'STAGE - Compress Server Build'
+                dir('project\\ClonkBR') {
+                    unstash 'compress'
+                    powershell "python -u compress.py --source=server-build --target=server-zips --build-id='${env.CHANGE_ID}'"
+                }
+            }
+        }
+
+        stage('Upload Server Build') {
+            steps {
+                echo 'STAGE - Upload Server Build'
+                dir('project\\ClonkBR') {
+                    unstash 'upload'
+                    powershell "python -u upload.py --bucket='${params.SERVER_S3_BUCKET}' --local-directory='server-zips' --remote-directory='${params.SERVER_S3_DIRECTORY}'"
+                }
+            }
+        }
+
+        stage('Launch GameLift Fleet') {
+            steps {
+                dir('project\\ClonkBR\\server-build') {
+                    unstash 'launch-gamelift-fleet'
+                    powershell "python -u launch-gamelift-fleet.py --build-name='${params.BUILD_NAME}' --fleet-name='${params.FLEET_NAME}' --build-version='${params.BUILD_VERSION}' --aws-region='${params.AWS_REGION}' --build-path='.\\WindowsServer' --environment='${params.ENVIRONMENT}'"
+                }
+            }
+        }
+
+        stage('Update GameLift Alias') {
+            steps {
+                dir('project\\ClonkBR\\server-build') {
+                    unstash 'update-gamelift-alias'
+                    script {
+                        env.FLEET_ID = readFile('fleetId.txt').trim()
+                    }
+                    powershell "python -u update-gamelift-alias.py --fleet-id='${env.FLEET_ID}' --alias-id='${params.ALIAS_ID}' --aws-region='${params.AWS_REGION}'"
+                }
+            }
+        }
+
+        stage('Clean up GameLift Fleets') {
+            steps {
+                dir('project\\ClonkBR') {
+                    unstash 'delete-gamelift-fleets'
+                    powershell "python -u delete-gamelift-fleets.py"
+                }
+            }
+        }
+
+        stage('Get Upload Urls') {
+            steps {
+                echo 'STAGE - Get Upload Urls'
+                dir('project\\ClonkBR') {
+                    script {
+                        env.BUILD_URLS = readFile('urls.txt').trim()
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Build completed: SUCCESS"
+            unstash 'slack-notification'
+            script {
+                def changeSetDetails = getChangeSetDetails()
+                encodedMessage = changeSetDetails.bytes.encodeBase64().toString()
+            }
+            powershell "python -u slack-notification.py --title='${env.JOB_NAME} - ${env.CHANGE_ID}' --base64-message='${encodedMessage}' --webhook='${env.SLACK_NOTIFICATION_WEBHOOK}' --color='#00FF00'"
+            powershell "python -u slack-notification.py --title='${env.JOB_NAME} - ${env.CHANGE_ID}' --urls='${env.BUILD_URLS}' --webhook='${env.SLACK_NOTIFICATION_WEBHOOK}' --color='#00FF00'"
+            powershell "python -u slack-notification.py --title='${env.JOB_NAME}' --message='Build & Deployment of ${params.BUILD_NAME} to GameLift Succeeded. Fleet ID ${env.FLEET_ID} (${params.FLEET_NAME}) is now mapped to ${params.ALIAS_ID}' --webhook='${env.SLACK_NOTIFICATION_WEBHOOK}' --color='#00FF00'"
+        }
+        failure {
+            echo "Build completed: FAILURE"
+            unstash 'slack-notification'
+            powershell "python -u slack-notification.py --title='${env.JOB_NAME}' --message='Failed to Build' --webhook='${env.SLACK_NOTIFICATION_WEBHOOK}' --color='#FF0000'"
+        }
+    }
+}
